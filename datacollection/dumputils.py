@@ -38,14 +38,14 @@ class Sniffer(object):
                  vboxsf -o uid=ld,gid=ld msg_dir %s' % (shared_dir)
         self.issueCommand(mount_command, block=True)
 
-    def start_capture(self, TEST_PCAP_PATH=None, pcap_filter=""):
+    def start_capture(self, pcap_path=None, pcap_filter=""):
         """Start capture. Configure sniffer if arguments are given.
         Captured file should be in sharedDir and has .pcap extension."""
         if pcap_filter:
             self.set_capture_filter(pcap_filter)
 
-        if TEST_PCAP_PATH:
-            self.set_pcap_path(TEST_PCAP_PATH)
+        if pcap_path:
+            self.set_pcap_path(pcap_path)
 
         command = 'dumpcap -a duration:{} -a filesize:{} -i any -s 0 -f \'{}\' -w {}'\
             .format(cm.SOFT_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE, self.pcap_filter,
