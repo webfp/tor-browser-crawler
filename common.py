@@ -1,6 +1,5 @@
 import os
 import platform
-from tempfile import gettempdir
 
 if 'x86_64' in platform.processor():
     arch = '64'
@@ -13,31 +12,29 @@ join = path.join
 dirname = os.path.dirname
 expanduser = os.path.expanduser
 
-# GLOBALS
-# separator for craeating indexation keys
-SEP = '-'
-
 # timeouts and pauses
+PAUSE_BETWEEN_SITES = 5      # pause before crawling a new site
 WAIT_IN_SITE = 5             # time to wait after the page loads
 PAUSE_BETWEEN_INSTANCES = 4  # pause before visiting the same site (instances)
-HARD_VISIT_TIMEOUT = 120     # in case a visit takes longer than finish it
-
+SOFT_VISIT_TIMEOUT = 120     # timeout used by selenium and dumpcap
+# signal based hard timeout in case soft timeout fails
+HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
 # max dumpcap size in KB
 MAX_DUMP_SIZE = 30000
-
 # max filename length
 MAX_FNAME_LENGTH = 200
 
-# Wang et al's crawl parameters
-DEFAULT_NUM_BATCHES = 10
-DEFAULT_NUM_WEBSTIES = 100
-DEFAULT_NUM_TRIALS = 40
+DISABLE_RANDOMIZEDPIPELINENING = False  # use with caution!
+STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
+# otherwise we had many cases where get_streams hanged
+
+XVFB_W = 1280
+XVFB_H = 720
 
 # Tor browser version suffixes
-
 # The version used by Wang & Goldberg
 TBB_V_2_4_7_A1 = "2.4.7-alpha-1"
-TBB_WANG_ET_AL = TBB_V_2_4_7_A1
+TBB_WANG_AND_GOLDBERG = TBB_V_2_4_7_A1
 
 TBB_V_3_5 = "3.5"
 TBB_V_4_0_8 = "4.0.8"
@@ -46,16 +43,44 @@ TBB_DEFAULT_VERSION = TBB_V_4_0_8
 TBB_KNOWN_VERSIONS = [TBB_V_2_4_7_A1, TBB_V_3_5, TBB_V_4_0_8]
 
 # Default paths
-TEMP_DIR = gettempdir()
 BASE_DIR = path.abspath(os.path.dirname(__file__))
 DATASET_DIR = join(BASE_DIR, "datasets")
 ALEXA_DIR = join(DATASET_DIR, "alexa")
 TEST_DIR = join(BASE_DIR, 'test')
+DUMMY_TEST_DIR = join(TEST_DIR, 'dummy')
+DUMMY_TEST_DIR_TARGZIPPED = DUMMY_TEST_DIR + ".tar.gz"
 RESULTS_DIR = join(BASE_DIR, 'results')
 ETC_DIR = join(BASE_DIR, 'etc')
 PERMISSIONS_DB = join(ETC_DIR, 'permissions.sqlite')
 HOME_PATH = expanduser('~')
 TBB_BASE_DIR = join(BASE_DIR, 'tbb')
+
+# Top URLs localized (DE) to prevent the effect of localization
+LOCALIZED_DATASET = join(ETC_DIR, "localized-urls-100-top.csv")
+
+# Experiment type determines what to do during the visits
+EXP_TYPE_WANG_AND_GOLDBERG = "wang_and_goldberg"  # setting from WPES'13 paper
+EXP_TYPE_MULTITAB_ALEXA = "multitab_alexa"  # open Alexa sites in multiple tabs
+
+# Tor ports
+SOCKS_PORT = 9050
+CONTROLLER_PORT = 9051
+MAX_ENTRY_GUARDS = "1"
+
+# defaults for batch and instance numbers
+NUM_BATCHES = 10
+NUM_INSTANCES = 4
+MAX_SITES_PER_TOR_PROCESS = 100  # reset tor process after crawling 100 sites
+
+# torrc dictionaries
+TORRC_DEFAULT = {'SocksPort': str(SOCKS_PORT),
+                 'ControlPort': str(CONTROLLER_PORT)}
+
+TORRC_WANG_AND_GOLDBERG = {'SocksPort': str(SOCKS_PORT),
+                           'ControlPort': str(CONTROLLER_PORT),
+                           'MaxCircuitDirtiness': '600000',
+                           'UseEntryGuards': '0'
+                           }
 
 # Directory structure and paths depend on TBB versions
 # Path to Firefox binary in TBB dir
@@ -97,30 +122,6 @@ TOR_DATA_DIR_DICT = {"2": TOR_V2_DATA_DIR,
                      "3": TOR_V3_DATA_DIR,
                      "4": TOR_V4_DATA_DIR,
                      }
-
-# Top URLs localized (DE) to prevent the effect of localization
-LOCALIZED_DATASET = join(ETC_DIR, "localized-urls-100-top.csv")
-
-# Experiment types determines what to do during the visits
-EXP_TYPE_WANG_ET_AL = 1  # Tao's experiments
-EXP_TYPE_MULTITAB_ALEXA = 2  # open Alexa sites in multiple tabs
-EXP_TYPE_MULTITAB_FIXED_BG_SITE = 3  # have a fixed site (e.g. Twitter) in
-# the background and open Alexa sites in multiple tabs
-
-# Tor ports
-SOCKS_PORT = 9050
-CONTROLLER_PORT = 9051
-MAX_ENTRY_GUARDS = "1"
-
-# torrc dictionaries
-TORRC_DEFAULT = {'SocksPort': str(SOCKS_PORT),
-                 'ControlPort': str(CONTROLLER_PORT)}
-
-TORRC_WANG_AND_GOLDBERG = {'SocksPort': str(SOCKS_PORT),
-                           'ControlPort': str(CONTROLLER_PORT),
-                           'MaxCircuitDirtiness': '600000',
-                           'UseEntryGuards': '0'
-                           }
 
 
 def get_tbb_major_version(version):

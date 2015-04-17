@@ -1,5 +1,6 @@
 import os
 import sys
+from urllib2 import urlopen
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import unittest
@@ -52,12 +53,14 @@ class SnifferTest(unittest.TestCase):
             os.remove(TEST_PCAP_PATH)
         self.snf.set_pcap_path(TEST_PCAP_PATH)
         self.snf.start_capture()
-        time.sleep(1)  # TODO add a urlopen to make sure we capture packet
+        time.sleep(1)
+        f = urlopen("https://torproject.org/", timeout=10)
+        self.assertTrue(f)
         self.snf.stop_capture()
         self.assertTrue(os.path.isfile(TEST_PCAP_PATH),
                         "Cannot find pcap file")
+        self.assertGreater(os.path.getsize(TEST_PCAP_PATH), 0)
         os.remove(TEST_PCAP_PATH)
-        #  TODO add size check..
 
 if __name__ == "__main__":
     unittest.main()

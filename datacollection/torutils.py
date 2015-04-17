@@ -10,20 +10,11 @@ from stem.control import Controller
 import stem.process
 from stem.util import term
 import sys
-
+from httplib import CannotSendRequest
 import common as cm
 from log import wl_log
 from utils import clone_dir_with_timestap
 import utils as ut
-
-####################################################
-# Tor configuration parameters
-# TODO: pass these as parameters to constructor
-DISABLE_RANDOMIZEDPIPELINENING = False
-####################################################
-
-STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
-# otherwise we had many cases where get_streams hanged
 
 
 class TorController(object):
@@ -53,7 +44,7 @@ class TorController(object):
             shutil.rmtree(self.tmp_tor_data_dir)
 
     def launch_tor_service(self, logfile='/dev/null'):
-        '''Launch Tor service and return the process.'''
+        """Launch Tor service and return the process."""
         self.log_file = logfile
         self.tmp_tor_data_dir = ut.clone_dir_with_timestap(
             cm.get_tor_data_path(self.tbb_version))
@@ -78,6 +69,8 @@ class TorController(object):
                             (cm.SOCKS_PORT, exc))
             sys.exit(1)
         except:
+            # most of the time this is due to another instance of
+            # tor running on the system
             wl_log.critical("Error launching Tor", exc_info=True)
             sys.exit(1)
 
@@ -89,7 +82,7 @@ class TorController(object):
         """Close all streams of a controller."""
         wl_log.debug("Closing all streams")
         try:
-            ut.timeout(STREAM_CLOSE_TIMEOUT)
+            ut.timeout(cm.STREAM_CLOSE_TIMEOUT)
             for stream in self.controller.get_streams():
                 wl_log.debug("Closing stream %s %s %s " %
                              (stream.id, stream.purpose,
@@ -119,7 +112,7 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
         self.profile.set_preference('network.proxy.type', 1)
         self.profile.set_preference('network.proxy.socks', '127.0.0.1')
         self.profile.set_preference('network.proxy.socks_port', cm.SOCKS_PORT)
-        if DISABLE_RANDOMIZEDPIPELINENING:
+        if cm.DISABLE_RANDOMIZEDPIPELINENING:
             self.profile.set_preference(
                 'network.http.pipelining.max-optimistic-requests', 5000)
             self.profile.set_preference(
@@ -165,12 +158,13 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
                           capabilities=self.capabilities)
             self.is_running = True
         except WebDriverException as error:
-            wl_log.error("Error connecting to Webdriver %s" % error)
+            wl_log.error("WebDriverException while connecting to Webdriver %s"
+                         % error)
         except socket.error as skterr:
             wl_log.error("Error connecting to Webdriver")
             wl_log.error(skterr.message)
         except Exception as e:
-            wl_log.error(str(e))
+            wl_log.error("Error connecting to Webdriver: " + str(e))
 
     def export_lib_path(self):
         os.environ["LD_LIBRARY_PATH"] = os.path.dirname(
@@ -208,15 +202,30 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
             return tbb_profile
 
     def quit(self):
-        '''
+        """
         Overrides the base class method cleaning the timestamped profile.
 
-        '''
+        """
         self.is_running = False
         try:
             wl_log.info("Quit: Removing profile dir")
             shutil.rmtree(self.prof_dir_path)
             super(TorBrowserDriver, self).quit()
+        except CannotSendRequest:
+            wl_log.error("CannotSendRequest while quitting TorBrowserDriver",
+                         exc_info=False)
+            # following is copied from webdriver.firefox.webdriver.quit() which
+            # was interrupted due to an unhandled CannotSendRequest exception.
+
+            # kill the browser
+            self.binary.kill()
+            # remove the profile folder
+            try:
+                shutil.rmtree(self.profile.path)
+                if self.profile.tempfolder is not None:
+                    shutil.rmtree(self.profile.tempfolder)
+            except Exception as e:
+                print(str(e))
         except Exception:
             wl_log.error("Exception while quitting TorBrowserDriver",
                          exc_info=True)

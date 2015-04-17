@@ -5,7 +5,7 @@ import common as cm
 
 
 class Sniffer(object):
-    '''Capture network traffic using dumpcap.'''
+    """Capture network traffic using dumpcap."""
 
     def __init__(self):
         self.pcap_file = '/dev/null'  # uggh, make sure we set a path
@@ -31,7 +31,7 @@ class Sniffer(object):
         return self.pcap_filter
 
     def setup_shared(self, shared_dir):
-        '''Set up the shared folder.'''
+        """Set up the shared folder."""
         # mount shared folder
         wl_log.info('mounting shared folder')
         mount_command = 'sudo mount -t \
@@ -39,8 +39,8 @@ class Sniffer(object):
         self.issueCommand(mount_command, block=True)
 
     def start_capture(self, TEST_PCAP_PATH=None, pcap_filter=""):
-        '''Start capture. Configure sniffer if arguments are given.
-        Captured file should be in sharedDir and has .pcap extension.'''
+        """Start capture. Configure sniffer if arguments are given.
+        Captured file should be in sharedDir and has .pcap extension."""
         if pcap_filter:
             self.set_capture_filter(pcap_filter)
 
@@ -48,7 +48,7 @@ class Sniffer(object):
             self.set_pcap_path(TEST_PCAP_PATH)
 
         command = 'dumpcap -a duration:{} -a filesize:{} -i any -s 0 -f \'{}\' -w {}'\
-            .format(cm.HARD_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE, self.pcap_filter,
+            .format(cm.SOFT_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE, self.pcap_filter,
                     self.pcap_file)
         wl_log.info(command)
         self.p0 = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -56,12 +56,12 @@ class Sniffer(object):
         self.is_recording = True
 
     def stop_capture(self):
-        '''Kill dumpcap process.'''
+        """Kill dumpcap process."""
         self.p0.kill()
         self.is_recording = False
         if os.path.isfile(self.pcap_file):
             wl_log.info('Dumpcap killed. Capture size: %s Bytes %s' %
-                           (os.path.getsize(self.pcap_file), self.pcap_file))
+                        (os.path.getsize(self.pcap_file), self.pcap_file))
         else:
             wl_log.warning('Dumpcap killed but cannot find capture file: %s'
-                        % self.pcap_file)
+                           % self.pcap_file)

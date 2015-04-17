@@ -18,14 +18,23 @@ class Test(unittest.TestCase):
     def run_cmd(self, cmd):
         return commands.getstatusoutput('%s ' % cmd)
 
-    def is_installed(self, pkg_name):
+    def assert_installed(self, pkg_name, msg=""):
         """Check if a package is installed."""
         cmd = 'which %s' % pkg_name
         status, _ = self.run_cmd(cmd)
-        return False if status else True
+        self.assertFalse(status, msg)
+
+    def test_dumpcap(self):
+        self.assert_installed('dumpcap')
+
+    def test_xvfb(self):
+        self.assert_installed('Xvfb')
 
     def test_stem(self):
         self.assert_py_pkg_installed('stem')
+
+    def test_xvfbwrapper(self):
+        self.assert_py_pkg_installed('xvfbwrapper')
 
     def test_argparse(self):
         self.assert_py_pkg_installed('argparse')
@@ -34,8 +43,7 @@ class Test(unittest.TestCase):
         self.assert_py_pkg_installed('requests')
 
     def test_tor_bin(self):
-        self.assertTrue(self.is_installed('tor'),
-                        'Cannot find tor binary on your system')
+        self.assert_installed('tor', 'Cannot find tor binary on your system')
 
     def test_webfp_path(self):
         self.assertTrue(os.path.isdir(cm.BASE_DIR),
