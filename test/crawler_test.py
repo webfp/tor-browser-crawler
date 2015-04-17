@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import unittest
 import shutil
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from datacollection.crawler import Crawler
 import common as cm
 
@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
         self.assertEqual(crawler.tbb_version, cm.TBB_DEFAULT_VERSION)
         self.assertFalse(crawler.xvfb)
         crawler.stop_crawl(pack_results=True)
-        tar_gz_crawl_data = crawler.crawl_dir+".tar.gz"
+        tar_gz_crawl_data = crawler.crawl_dir + ".tar.gz"
         self.assertTrue(os.path.isfile(tar_gz_crawl_data))
         shutil.rmtree(crawler.crawl_dir)
         os.remove(tar_gz_crawl_data)

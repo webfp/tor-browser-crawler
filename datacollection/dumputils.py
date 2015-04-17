@@ -16,11 +16,9 @@ class Sniffer(object):
     def set_pcap_path(self, pcap_filename):
         """Set filename and filter options for capture."""
         self.pcap_file = pcap_filename
-        return self
 
     def set_capture_filter(self, _filter):
         self.pcap_filter = _filter
-        return self
 
     def get_pcap_path(self):
         """Return capture (pcap) filename."""
@@ -30,17 +28,8 @@ class Sniffer(object):
         """Return capture filter."""
         return self.pcap_filter
 
-    def setup_shared(self, shared_dir):
-        """Set up the shared folder."""
-        # mount shared folder
-        wl_log.info('mounting shared folder')
-        mount_command = 'sudo mount -t \
-                 vboxsf -o uid=ld,gid=ld msg_dir %s' % (shared_dir)
-        self.issueCommand(mount_command, block=True)
-
     def start_capture(self, pcap_path=None, pcap_filter=""):
-        """Start capture. Configure sniffer if arguments are given.
-        Captured file should be in sharedDir and has .pcap extension."""
+        """Start capture. Configure sniffer if arguments are given."""
         if pcap_filter:
             self.set_capture_filter(pcap_filter)
 

@@ -1,9 +1,11 @@
 import os
+import sys
 import unittest
-import utils as ut
 from time import sleep
-import common as cm
 import commands as cmds
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import utils as ut
+import common as cm
 
 
 class UtilsTest(unittest.TestCase):
@@ -50,7 +52,7 @@ class UtilsTest(unittest.TestCase):
                 self.fail("Cannot confirm file type")
 
         self.failIf(ut.is_targz_archive_corrupt(cm.DUMMY_TEST_DIR_TARGZIPPED))
-
+        os.remove(cm.DUMMY_TEST_DIR_TARGZIPPED)
 
 if __name__ == "__main__":
     unittest.main()

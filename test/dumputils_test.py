@@ -1,12 +1,12 @@
 import os
 import sys
-from urllib2 import urlopen
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 import unittest
-from datacollection.dumputils import Sniffer
+from urllib2 import urlopen
 import time
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from datacollection.dumputils import Sniffer
 import common as cm
+
 TEST_CAP_FILTER = 'host 255.255.255.255'
 TEST_PCAP_PATH = os.path.join(cm.TEST_DIR, 'test.pcap')
 
@@ -36,17 +36,6 @@ class SnifferTest(unittest.TestCase):
         self.assertTrue(TEST_CAP_FILTER == self.snf.get_capture_filter(),
                         "Sniffer filter cannot be set %s %s"
                         % (TEST_CAP_FILTER, self.snf.get_capture_filter()))
-
-    def test_method_chanining(self):
-        self.snf.set_capture_filter(TEST_CAP_FILTER).\
-            set_pcap_path(TEST_PCAP_PATH)
-
-        self.assertTrue(TEST_CAP_FILTER == self.snf.get_capture_filter(),
-                        "Sniffer filter cannot be set %s %s"
-                        % (TEST_CAP_FILTER, self.snf.get_capture_filter()))
-        self.assertTrue(TEST_PCAP_PATH == self.snf.get_pcap_path(),
-                        "Sniffer pcap path cannot be set %s %s"
-                        % (TEST_PCAP_PATH, self.snf.get_pcap_path()))
 
     def test_start_capture(self):
         if os.path.isfile(TEST_PCAP_PATH):

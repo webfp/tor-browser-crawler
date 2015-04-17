@@ -1,10 +1,9 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import time
 import unittest
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import common as cm
-
 from utils import get_hash_of_directory
 from datacollection.torutils import TorBrowserDriver
 from datacollection.torutils import TorController
@@ -22,18 +21,6 @@ class TestTorUtils(unittest.TestCase):
         self.tor_process.kill()
         self.tor_process = self.tor_controller.launch_tor_service()
         self.assertTrue(self.tor_process, 'Cannot launch Tor process')
-
-    def test_close_all_streams(self):
-        streams_open = False
-        new_tb_driver = TorBrowserDriver()
-        new_tb_driver.get('http://www.google.com')
-        time.sleep(cm.WAIT_IN_SITE)
-        self.tor_controller.close_all_streams()
-        for stream in self.tor_controller.controller.get_streams():
-            print stream.id, stream.purpose, stream.target_address, "left open"
-            streams_open = True
-        new_tb_driver.quit()
-        self.assertFalse(streams_open, 'Could not close all streams.')
 
     def test_tb_orig_profile_not_modified(self):
         """Visiting a site should not modify the original profile contents."""
@@ -59,6 +46,18 @@ class TestTorUtils(unittest.TestCase):
         new_tb_driver.get(HTTP_URL)
         self.assertEqual(new_tb_driver.current_url, HTTPS_URL)
         new_tb_driver.quit()
+
+    def test_close_all_streams(self):
+        streams_open = False
+        new_tb_driver = TorBrowserDriver()
+        new_tb_driver.get('http://www.google.com')
+        time.sleep(cm.WAIT_IN_SITE)
+        self.tor_controller.close_all_streams()
+        for stream in self.tor_controller.controller.get_streams():
+            print stream.id, stream.purpose, stream.target_address, "left open"
+            streams_open = True
+        new_tb_driver.quit()
+        self.assertFalse(streams_open, 'Could not close all streams.')
 
     @classmethod
     def tearDownClass(cls):

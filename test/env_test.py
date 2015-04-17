@@ -1,10 +1,9 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 import unittest
-import common as cm
 import commands
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import common as cm
 
 
 class Test(unittest.TestCase):
@@ -19,10 +18,11 @@ class Test(unittest.TestCase):
         return commands.getstatusoutput('%s ' % cmd)
 
     def assert_installed(self, pkg_name, msg=""):
-        """Check if a package is installed."""
         cmd = 'which %s' % pkg_name
         status, _ = self.run_cmd(cmd)
-        self.assertFalse(status, msg)
+        self.assertFalse(status, "%s is not installed."
+                         "Install it with sudo apt-get install %s" %
+                         (pkg_name, pkg_name))
 
     def test_dumpcap(self):
         self.assert_installed('dumpcap')
@@ -42,9 +42,6 @@ class Test(unittest.TestCase):
     def test_requests(self):
         self.assert_py_pkg_installed('requests')
 
-    def test_tor_bin(self):
-        self.assert_installed('tor', 'Cannot find tor binary on your system')
-
     def test_webfp_path(self):
         self.assertTrue(os.path.isdir(cm.BASE_DIR),
                         'Cannot find base dir path %s' % cm.BASE_DIR)
@@ -60,6 +57,9 @@ class Test(unittest.TestCase):
         self.assertTrue(os.path.isdir(tbb_profile_path),
                         'Cannot find Tor Browser profile dir %s'
                         % tbb_profile_path)
+
+    def test_selenium(self):
+        self.assert_py_pkg_installed('selenium')
 
     def test_py_selenium_version(self):
         import selenium

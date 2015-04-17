@@ -1,8 +1,7 @@
-from os.path import dirname, realpath
+from os.path import dirname, realpath, join
 import sys
-sys.path.append(dirname(dirname(realpath(__file__))))
-import os
 import unittest
+sys.path.append(dirname(dirname(realpath(__file__))))
 import common as cm
 
 
@@ -31,16 +30,16 @@ class Test(unittest.TestCase):
         ver_str = "2.3.25-16"
         tb_bin_path_v2_3_25_16 = cm.get_tb_bin_path(ver_str)
         self.assert_(ver_str in tb_bin_path_v2_3_25_16)
-        self.assert_(os.path.join('App', 'Firefox', 'firefox') in
+        self.assert_(join('App', 'Firefox', 'firefox') in
                      tb_bin_path_v2_3_25_16)
 
         tb_bin_path_v3_5 = cm.get_tb_bin_path(cm.TBB_V_3_5)
         self.assert_(cm.TBB_V_3_5 in tb_bin_path_v3_5)
-        self.assert_(os.path.join('Browser', 'firefox') in tb_bin_path_v3_5)
+        self.assert_(join('Browser', 'firefox') in tb_bin_path_v3_5)
 
         tb_bin_path_V_4_0_8 = cm.get_tb_bin_path(cm.TBB_V_4_0_8)
         self.assert_(cm.TBB_V_4_0_8 in tb_bin_path_V_4_0_8)
-        self.assert_(os.path.join('Browser', 'firefox') in tb_bin_path_V_4_0_8)
+        self.assert_(join('Browser', 'firefox') in tb_bin_path_V_4_0_8)
 
         self.assert_(cm.TBB_BASE_DIR in tb_bin_path_v2_3_25_16)
         self.assert_(cm.TBB_BASE_DIR in tb_bin_path_v3_5)
@@ -70,7 +69,7 @@ class Test(unittest.TestCase):
         ver_str = "2.3.25-16"
         tor_data_path_v2_3_25_16 = cm.get_tor_data_path(ver_str)
         self.assert_(ver_str in tor_data_path_v2_3_25_16)
-        self.assert_(os.path.join('Data', 'Tor') in
+        self.assert_(join('Data', 'Tor') in
                      tor_data_path_v2_3_25_16)
         self.assert_(cm.TBB_BASE_DIR in tor_data_path_v2_3_25_16)
         self.assert_(cm.get_tbb_dirname(ver_str) in
@@ -78,7 +77,7 @@ class Test(unittest.TestCase):
 
         tor_data_path_v3_5 = cm.get_tor_data_path(cm.TBB_V_3_5)
         self.assert_(cm.TBB_V_3_5 in tor_data_path_v3_5)
-        self.assert_(os.path.join('Data', 'Tor') in
+        self.assert_(join('Data', 'Tor') in
                      tor_data_path_v3_5)
         self.assert_(cm.TBB_BASE_DIR in tor_data_path_v3_5)
         self.assert_(cm.get_tbb_dirname(cm.TBB_V_3_5) in
@@ -86,7 +85,7 @@ class Test(unittest.TestCase):
 
         tor_data_path_v4_0_8 = cm.get_tor_data_path(cm.TBB_V_4_0_8)
         self.assert_(cm.TBB_V_4_0_8 in tor_data_path_v4_0_8)
-        self.assert_(os.path.join('Browser', 'TorBrowser', 'Data', 'Tor') in
+        self.assert_(join('Browser', 'TorBrowser', 'Data', 'Tor') in
                      tor_data_path_v4_0_8)
         self.assert_(cm.TBB_BASE_DIR in tor_data_path_v4_0_8)
         self.assert_(cm.get_tbb_dirname(cm.TBB_V_4_0_8) in
