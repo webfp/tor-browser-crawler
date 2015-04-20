@@ -19,6 +19,13 @@ class SnifferTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_is_dumpcap_running(self):
+        self.snf.set_pcap_path(TEST_PCAP_PATH)
+        self.snf.start_capture()
+        self.assertTrue(self.snf.is_dumpcap_running())
+        self.snf.stop_capture()
+        os.remove(TEST_PCAP_PATH)
+
     def test_default_cap_filter(self):
         self.assertTrue(self.snf.get_capture_filter() == '')
 

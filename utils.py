@@ -6,6 +6,7 @@ import commands
 from time import strftime
 import distutils.dir_util as du
 from log import wl_log
+import psutil
 
 
 class TimeExceededError(Exception):
@@ -102,6 +103,18 @@ def pack_crawl_data(crawl_dir):
         return False
     else:
         return True
+
+
+def gen_all_children_procs(parent_pid):
+    parent = psutil.Process(parent_pid)
+    for child in parent.get_children(recursive=True):
+        yield child
+
+
+def kill_all_children(parent_pid):
+    """Kill all child process of a given parent."""
+    for child in gen_all_children_procs(parent_pid):
+        child.kill()
 
 
 def die(last_words="Unknown problem, quitting!"):

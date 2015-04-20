@@ -1,8 +1,9 @@
 import subprocess
 from log import wl_log
 import os
-import time
 import common as cm
+import utils as ut
+import time
 
 DUMPCAP_KILL_TIMEOUT = 10
 
@@ -47,15 +48,26 @@ class Sniffer(object):
                                    stderr=subprocess.PIPE, shell=True)
         self.is_recording = True
 
+    def is_dumpcap_running(self, proc_name="dumpcap"):
+        for proc in ut.gen_all_children_procs(self.p0.pid):
+            print proc.pid, proc.cmdline
+            if proc_name in proc.cmdline:
+                print "Found", proc.pid, proc.cmdline
+                return proc.pid in [int(x.rstrip())
+                                    for x in os.popen('pgrep %s' % proc_name)]
+
     def stop_capture(self):
         """Kill dumpcap process."""
+        # self.p0.kill()
+        # self.p0.wait()
+        ut.kill_all_children(self.p0.pid)
         self.p0.kill()
-        timeout = DUMPCAP_KILL_TIMEOUT
-        while timeout > 0 and self.p0.poll() is None:
+        timeout = 10
+        while timeout > 0 and self.is_dumpcap_running():
             time.sleep(1)
             timeout -= 1
-        wl_log.info("Waited %s seconds for killing dumpcap (%s)" %
-                    (DUMPCAP_KILL_TIMEOUT - timeout, self.p0.poll()))
+        print "Waited for %s seconds for killing dumpcap" % (10 - timeout)
+
         self.is_recording = False
         if os.path.isfile(self.pcap_file):
             wl_log.info('Dumpcap killed. Capture size: %s Bytes %s' %
