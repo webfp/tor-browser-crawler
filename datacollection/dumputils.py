@@ -57,7 +57,12 @@ class Sniffer(object):
 
     def is_dumpcap_running(self):
         for proc in ut.gen_all_children_procs(self.p0.pid):
+<<<<<<< HEAD
             if "dumpcap" in proc.cmdline():
+=======
+            print proc.cmdline()
+            if "dumpcap" in proc.cmdline:
+>>>>>>> 215d7256f6cbf045b5d5b235c7bfbdc47baed659
                 return True
         return False
 
