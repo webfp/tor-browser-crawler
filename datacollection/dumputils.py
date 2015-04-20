@@ -1,7 +1,10 @@
 import subprocess
 from log import wl_log
 import os
+import time
 import common as cm
+
+DUMPCAP_KILL_TIMEOUT = 10
 
 
 class Sniffer(object):
@@ -47,6 +50,12 @@ class Sniffer(object):
     def stop_capture(self):
         """Kill dumpcap process."""
         self.p0.kill()
+        timeout = DUMPCAP_KILL_TIMEOUT
+        while timeout > 0 and self.p0.poll() is None:
+            time.sleep(1)
+            timeout -= 1
+        wl_log.info("Waited %s seconds for killing dumpcap (%s)" %
+                    (DUMPCAP_KILL_TIMEOUT - timeout, self.p0.poll()))
         self.is_recording = False
         if os.path.isfile(self.pcap_file):
             wl_log.info('Dumpcap killed. Capture size: %s Bytes %s' %
