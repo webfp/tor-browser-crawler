@@ -92,6 +92,9 @@ class TorController(object):
             wl_log.critical("Closing streams timed out!")
         except:
             wl_log.debug("Exception closing stream")
+        finally:
+            wl_log.debug("Canceling close stream timeout")
+            ut.cancel_timeout()
 
 
 class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
