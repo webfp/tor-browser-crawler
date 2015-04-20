@@ -33,6 +33,9 @@ class Test(unittest.TestCase):
     def test_stem(self):
         self.assert_py_pkg_installed('stem')
 
+    def test_psutil(self):
+        self.assert_py_pkg_installed('psutil')
+
     def test_xvfbwrapper(self):
         self.assert_py_pkg_installed('xvfbwrapper')
 
@@ -64,10 +67,10 @@ class Test(unittest.TestCase):
     def test_py_selenium_version(self):
         import selenium
         pkg_ver = selenium.__version__
-        err_msg = "Python Selenium package should be greater than 2.7.32"
+        err_msg = "Python Selenium package should be greater than 2.45.0"
         min_v = 2
-        min_minor_v = 37
-        min_micro_v = 2
+        min_minor_v = 45
+        min_micro_v = 0
         version, minor_v, micro_v = pkg_ver.split('.')
         self.assertGreaterEqual(version, min_v, err_msg)
         self.assertGreaterEqual(minor_v, min_minor_v, err_msg)
