@@ -1,10 +1,13 @@
 import os
 import platform
 
-if 'x86_64' in platform.processor():
+architecture = platform.architecture()
+if '64' in architecture[0]:
     arch = '64'
-else:
+elif '32' in architecture[0]:
     arch = '32'
+else:
+    raise RuntimeError('Architecture is not known: %s' % architecture)
 
 # shortcuts
 path = os.path
