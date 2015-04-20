@@ -23,6 +23,9 @@ class SnifferTest(unittest.TestCase):
         self.snf.set_pcap_path(TEST_PCAP_PATH)
         self.snf.start_capture()
         self.assertTrue(self.snf.is_dumpcap_running())
+        time.sleep(1)
+        urlopen("https://torproject.org/", timeout=10)
+        # we need some traffic to capture
         self.snf.stop_capture()
         os.remove(TEST_PCAP_PATH)
 

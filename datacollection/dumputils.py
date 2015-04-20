@@ -5,7 +5,7 @@ import common as cm
 import utils as ut
 import time
 
-DUMPCAP_KILL_TIMEOUT = 10
+DUMPCAP_START_TIMEOUT = 10.0
 
 
 class Sniffer(object):
@@ -46,28 +46,25 @@ class Sniffer(object):
         wl_log.info(command)
         self.p0 = subprocess.Popen(command, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, shell=True)
+        timeout = DUMPCAP_START_TIMEOUT  # in seconds
+        while timeout > 0 and not self.is_dumpcap_running():
+            time.sleep(0.1)
+            timeout -= 0.1
+        wl_log.debug("dumpcap started in %s seconds" %
+                     (DUMPCAP_START_TIMEOUT - timeout))
+
         self.is_recording = True
 
-    def is_dumpcap_running(self, proc_name="dumpcap"):
+    def is_dumpcap_running(self):
         for proc in ut.gen_all_children_procs(self.p0.pid):
-            print proc.pid, proc.cmdline
-            if proc_name in proc.cmdline:
-                print "Found", proc.pid, proc.cmdline
-                return proc.pid in [int(x.rstrip())
-                                    for x in os.popen('pgrep %s' % proc_name)]
+            if "dumpcap" in proc.cmdline:
+                return True
+        return False
 
     def stop_capture(self):
-        """Kill dumpcap process."""
-        # self.p0.kill()
-        # self.p0.wait()
-        ut.kill_all_children(self.p0.pid)
+        """Kill the dumpcap process."""
+        ut.kill_all_children(self.p0.pid)  # self.p0.pid is the shell pid
         self.p0.kill()
-        timeout = 10
-        while timeout > 0 and self.is_dumpcap_running():
-            time.sleep(1)
-            timeout -= 1
-        print "Waited for %s seconds for killing dumpcap" % (10 - timeout)
-
         self.is_recording = False
         if os.path.isfile(self.pcap_file):
             wl_log.info('Dumpcap killed. Capture size: %s Bytes %s' %
