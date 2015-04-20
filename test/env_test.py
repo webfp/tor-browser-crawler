@@ -73,8 +73,10 @@ class Test(unittest.TestCase):
         min_micro_v = 0
         version, minor_v, micro_v = pkg_ver.split('.')
         self.assertGreaterEqual(version, min_v, err_msg)
-        self.assertGreaterEqual(minor_v, min_minor_v, err_msg)
-        self.assertGreaterEqual(micro_v, min_micro_v, err_msg)
+        if version == min_v:
+            self.assertGreaterEqual(minor_v, min_minor_v, err_msg)
+            if minor_v == min_minor_v:
+                self.assertGreaterEqual(micro_v, min_micro_v, err_msg)
 
 
 if __name__ == "__main__":
