@@ -161,10 +161,11 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
             wl_log.error("WebDriverException while connecting to Webdriver %s"
                          % error)
         except socket.error as skterr:
-            wl_log.error("Error connecting to Webdriver")
+            wl_log.error("Error connecting to Webdriver", exc_info=True)
             wl_log.error(skterr.message)
         except Exception as e:
-            wl_log.error("Error connecting to Webdriver: " + str(e))
+            wl_log.error("Error connecting to Webdriver: %s" % e,
+                         exc_info=True)
 
     def export_lib_path(self):
         os.environ["LD_LIBRARY_PATH"] = os.path.dirname(
