@@ -1,6 +1,5 @@
-tor-browser-crawler
+tor-browser-crawler [![Build Status](https://travis-ci.org/webfp/tor-browser-crawler.svg)](https://travis-ci.org/webfp/tor-browser-crawler)
 ===============
- [![Build Status](https://travis-ci.org/webfp/tor-browser-crawler.svg)](https://travis-ci.org/webfp/tor-browser-crawler)
 This repository contains the source code for the data collection part of our ACM CCS’14 paper [“A Critical Analysis of Website Fingerprinting Attacks”](http://homes.esat.kuleuven.be/~mjuarezm/index_files/pdf/ccs14.pdf) [1].
 
 We used [Selenium](https://selenium-python.readthedocs.org/) to drive the **Tor Browser** and [stem](https://stem.torproject.org/) to control the tor process. Our implementation is loosely based on [tor-browser-selenium by  @isislovecruft](https://github.com/isislovecruft/tor-browser-selenium). 
