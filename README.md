@@ -51,6 +51,15 @@ The results are in the `results` folder in the root directory:
     * Logs: `./results/latest_crawl_log`
 
 
+Data samples
+-------------
+You can download a sample of data collected using this crawler with the configuration used by Wang and Goldberg in their paper (namely 10 batches, 100 pages and 4 instances per page) from here:
+
+* [Crawl `140203_042843`](TODO: url)
+
+We earmark each crawl with the creation timestamp of the crawl. We appended a list of the `id` numbers of the crawls we used along with more details in the appendix of the paper [1].
+
+
 Notes
 -------
 * Installed and tested in *xubuntu 14.04* and *debian 7.8*.
