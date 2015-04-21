@@ -7,7 +7,6 @@ We used [Selenium](https://selenium-python.readthedocs.org/) to drive the **Tor 
 
 The crawler follows the structure described by Wang and Goldberg in their ACM WPES’13 paper. We also used their notation and thus we refer to their paper for the definitions of `batch` and `instance` [2].
 
-We include a number of tests that verify the basic functionality of the code, but we note that it isn’t a complete test suite. In order to test that the *httpseverywhere* extension is correctly installed in the Tor browser spawn by our driver, we followed the same logic as in the [Selenium tests of the *httpseverywhere* project](https://gitweb.torproject.org/boklm/tor-browser-bundle-testsuite.git/tree/mozmill-tests/tbb-tests/https-everywhere.js ).
 
 Requirements
 ---------------
