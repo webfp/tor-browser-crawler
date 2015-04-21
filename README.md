@@ -51,19 +51,19 @@ The collected data can be found in the `results` folder in the root directory. :
     * Logs: `./results/latest_crawl_log`
 
 
-Data samples
+Sample crawl data
 -------------
-You can download a sample of data collected using this crawler with the configuration used by Wang and Goldberg in their paper (namely 10 batches, 100 pages and 4 instances per page) from here:
+You can download a sample of data collected using this crawler with the configuration used by Wang and Goldberg in their WPES'13 paper (namely 10 batches, 100 pages and 4 instances per page) from here:
 
 * [Crawl `140203_042843`](https://mega.co.nz/#!ekIXBTbZ!1bn7zSPuV5r8fS0zpp2hrMvNc4Xrj6F2oUbjlyBb87o)
 (SHA256: 06a007a41ca83bd24ad3f7e9f5e8f881bd81111a547cbfcf20f057be1b89d0dd)
 
-We earmark each crawl with the creation timestamp of the crawl. We appended a list of the `id` numbers of the crawls we used along with more details in the appendix of the paper [1].
+The crawl names include a timestamp. The list of crawls used in our study can be found in the appendix of the paper [1].
 
 
 Notes
 -------
-* Installed and tested in *xubuntu 14.04* and *debian 7.8*.
+* Tested on *Xubuntu 14.04* and *Debian 7.8*.
 
 
 References
