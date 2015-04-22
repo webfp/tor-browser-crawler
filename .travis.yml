@@ -11,7 +11,10 @@ install:
   - python setup.py
 before_script:
   - cd test  
-script:  py.test
+script:  py.test -k 'not dumputils_test.py'
 after_failure:
   - which dumpcap
   - sudo timeout 10 dumpcap -w /tmp/abc.pcap
+  - echo $?
+  - ls -la /tmp/abc.pcap
+
