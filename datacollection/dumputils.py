@@ -40,7 +40,7 @@ class Sniffer(object):
         if pcap_path:
             self.set_pcap_path(pcap_path)
         prefix = ""
-        if cm.running_in_CI:
+        if cm.running_in_CI and 0:
             prefix = "sudo "  # run as sudo in Travis CI since we cannot setcap
         command = '{}dumpcap -a duration:{} -a filesize:{} -i any -s 0 -f \'{}\' -w {}'\
             .format(prefix, cm.SOFT_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE,
