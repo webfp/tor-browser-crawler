@@ -36,7 +36,10 @@ if __name__ == '__main__':
     parser.add_argument('--stop', help='Crawl URLs until this line')
     parser.add_argument('--action', help='Type of action: crawl, pack_data')
     parser.add_argument('-i', '--input', help='Input data (crawl dir, etc. )')
-    parser.add_argument('-x', '--xvfb', help='run browser using XVFB',
+    parser.add_argument('-x', '--xvfb', help='Use XVFB (for headless testing)',
+                        action='store_true', default=False)
+    parser.add_argument('-c', '--capture-screen',
+                        help='Capture page screenshots',
                         action='store_true', default=False)
 
     args = parser.parse_args()
@@ -55,6 +58,7 @@ if __name__ == '__main__':
     start_line = int(args.start) if args.start else 1
     stop_line = int(args.stop) if args.stop else 999999999999
     xvfb = args.xvfb
+    capture_screen = args.capture_screen
     if verbose:
         wl_log.setLevel(logging.DEBUG)
     else:
@@ -90,7 +94,8 @@ if __name__ == '__main__':
         ut.die("Version of Tor browser is not recognized."
                " Use --help to see which are the accepted values.")
 
-    crawler = Crawler(torrc_dict, url_list, tbb_version, experiment, xvfb)
+    crawler = Crawler(torrc_dict, url_list, tbb_version,
+                      experiment, xvfb, capture_screen)
     wl_log.info("Command line parameters: %s" % sys.argv)
 
     # Run the crawl

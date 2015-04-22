@@ -13,7 +13,8 @@ class Crawler(object):
     """Provides methods to collect traffic traces."""
 
     def __init__(self, torrc_dict, url_list, tbb_version,
-                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False):
+                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
+                 capture_screen=True):
         # Create instance of Tor controller and sniffer used for the crawler
         self.crawl_dir = None
         self.crawl_logs_dir = None
@@ -29,6 +30,7 @@ class Crawler(object):
                                             self.tor_log)
         self.tor_process = None
         self.tb_driver = None
+        self.capture_screen = capture_screen
         self.xvfb = xvfb
         add_log_file_handler(wl_log, self.log_file)
         linkname = os.path.join(cm.RESULTS_DIR, 'latest_crawl_log')
@@ -38,10 +40,10 @@ class Crawler(object):
               num_instances=cm.NUM_INSTANCES, start_line=0):
         wl_log.info("Crawl configuration: batches: %s, instances: %s,"
                     " tbb_version: %s, experiment: %s, no of URLs: %s, "
-                    "crawl dir: %s, XVFB: %s"
+                    "crawl dir: %s, XVFB: %s, screenshot: %s"
                     % (num_batches, num_instances, self.tbb_version,
                        self.experiment, len(self.urls), self.crawl_dir,
-                       self.xvfb))
+                       self.xvfb, self.capture_screen))
         # for each batch
         for batch_num in xrange(num_batches):
             wl_log.info("********** Starting batch %s **********" % batch_num)
@@ -79,8 +81,9 @@ class Crawler(object):
                         self.visit = Visit(batch_num, site_num,
                                            instance_num, page_url,
                                            site_dir, self.tbb_version,
-                                           self.tor_controller, self, bg_site,
-                                           self.experiment, self.xvfb)
+                                           self.tor_controller, bg_site,
+                                           self.experiment, self.xvfb,
+                                           self.capture_screen)
 
                         self.visit.get()
                     except KeyboardInterrupt:  # CTRL + C

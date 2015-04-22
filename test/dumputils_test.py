@@ -8,7 +8,7 @@ from datacollection.dumputils import Sniffer
 import common as cm
 
 TEST_CAP_FILTER = 'host 255.255.255.255'
-TEST_PCAP_PATH = os.path.join(cm.TEST_DIR, 'test.pcap')
+TEST_PCAP_PATH = os.path.join(cm.TEST_FILES_DIR, 'test.pcap')
 
 
 class SnifferTest(unittest.TestCase):

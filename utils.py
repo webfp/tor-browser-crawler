@@ -7,6 +7,8 @@ from time import strftime
 import distutils.dir_util as du
 from log import wl_log
 import psutil
+from urllib2 import urlopen
+from hashlib import sha256
 
 
 class TimeExceededError(Exception):
@@ -120,3 +122,57 @@ def kill_all_children(parent_pid):
 def die(last_words="Unknown problem, quitting!"):
     wl_log.error(last_words)
     sys.exit(1)
+
+
+def read_file(path, binary=False):
+    """Read and return the file content."""
+    options = 'rb' if binary else 'rU'
+    with open(path, options) as f:
+        return f.read()
+
+
+def sha_256_sum_file(path, binary=True):
+    """Return the SHA-256 sum of the file."""
+    return sha256(read_file(path, binary=binary)).hexdigest()
+
+
+def gen_read_lines(path):
+    """Generator for reading the lines in a file."""
+    with open(path, 'rU') as f:
+        for line in f:
+            yield line
+
+
+def read_url(uri):
+    """Fetch and return a URI content."""
+    w = urlopen(uri)
+    return w.read()
+
+
+def write_to_file(file_path, data):
+    """Write data to file and close."""
+    with open(file_path, 'w') as ofile:
+        ofile.write(data)
+
+
+def download_file(uri, file_path):
+    write_to_file(file_path, read_url(uri))
+
+
+def extract_tbb_tarball(archive_path):
+    arch_dir = os.path.dirname(archive_path)
+    extracted_dir = os.path.join(arch_dir, "tor-browser_en-US")
+    tar_cmd = "tar xvf %s -C %s" % (archive_path, arch_dir)
+    status, txt = commands.getstatusoutput(tar_cmd)
+    if status or not os.path.isdir(extracted_dir):
+        wl_log.error("Error extracting TBB tarball %s: (%s: %s)"
+                     % (tar_cmd, status, txt))
+        return False
+    dest_dir = archive_path.split(".tar")[0]
+    mv_cmd = "mv %s %s" % (extracted_dir, dest_dir)
+    status, txt = commands.getstatusoutput(mv_cmd)
+    if status or not os.path.isdir(dest_dir):
+        wl_log.error("Error moving extracted TBB with the command %s: (%s: %s)"
+                     % (mv_cmd, status, txt))
+        return False
+    return True

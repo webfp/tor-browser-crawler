@@ -9,8 +9,10 @@ import socket
 from stem.control import Controller
 import stem.process
 from stem.util import term
+import sqlite3
 import sys
 from httplib import CannotSendRequest
+from tld import get_tld
 import common as cm
 from log import wl_log
 from utils import clone_dir_with_timestap
@@ -93,20 +95,21 @@ class TorController(object):
         except:
             wl_log.debug("Exception closing stream")
         finally:
-            wl_log.debug("Canceling close stream timeout")
             ut.cancel_timeout()
 
 
 class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
     def __init__(self, tbb_binary_path=None, tbb_profile_dir=None,
                  tbb_logfile_path=None,
-                 tbb_version=cm.TBB_DEFAULT_VERSION, page_url=""):
+                 tbb_version=cm.TBB_DEFAULT_VERSION, page_url="",
+                 capture_screen=True):
         self.is_running = False
         self.tbb_version = tbb_version
         self.export_lib_path()
         # Initialize Tor Browser's profile
         self.page_url = page_url
-        self.profile = self.get_own_tbb_profile(tbb_version)
+        self.capture_screen = capture_screen
+        self.profile = self.init_tbb_profile(tbb_version)
         # set homepage to a blank tab
         self.profile.set_preference('browser.startup.page', "0")
         self.profile.set_preference('browser.startup.homepage', 'about:newtab')
@@ -142,6 +145,7 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
         self.profile.set_preference('extensions.torlauncher.start_tor', False)
         self.profile.set_preference(
             'extensions.torbutton.versioncheck_enabled', False)
+        self.profile.set_preference('permissions.memory_only', False)
         self.profile.update_preferences()
         # Initialize Tor Browser's binary
         self.binary = self.get_tbb_binary(tbb_version=self.tbb_version,
@@ -175,29 +179,54 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
             cm.get_tor_bin_path(self.tbb_version))
 
     def get_tbb_binary(self, tbb_version, binary=None, logfile=None):
-        """
-        Returns a :class:`FirefoxBinary` pointing to the TBB's firefox binary.
-
-        :Args:
-        :param string binary: The path to the TBB's firefox binary.
-        :param string logfile: The path to the file to store the firefox
-                browser log messages and JS addons/extension messages in.
-
-        """
+        """Return FirefoxBinary pointing to the TBB's firefox binary."""
         tbb_logfile = None
         if not binary:
             binary = cm.get_tb_bin_path(tbb_version)
         if logfile:
             tbb_logfile = open(logfile, 'a+')
 
-        # in case you get an error for the unknown log_file, update selenium
+        # in case you get an error for the unknown log_file, make sure your
+        # Selenium version is compatible with the Firefox version in TBB.
         tbb_binary = FirefoxBinary(firefox_path=binary,
                                    log_file=tbb_logfile)
         return tbb_binary
 
-    def get_own_tbb_profile(self, version):
+    def add_canvas_permission(self):
+        """Create a permission db (permissions.sqlite) and add
+
+        exception for the canvas image extraction. Otherwise screenshots
+        taken by Selenium will be just blank images due to canvas
+        fingerprinting defense in TBB."""
+
+        connect_to_db = sqlite3.connect  # @UndefinedVariable
+        perm_db = connect_to_db(os.path.join(self.prof_dir_path,
+                                             "permissions.sqlite"))
+        cursor = perm_db.cursor()
+        # http://mxr.mozilla.org/mozilla-esr31/source/build/automation.py.in
+        cursor.execute("PRAGMA user_version=3")
+        cursor.execute("""CREATE TABLE IF NOT EXISTS moz_hosts (
+          id INTEGER PRIMARY KEY,
+          host TEXT,
+          type TEXT,
+          permission INTEGER,
+          expireType INTEGER,
+          expireTime INTEGER,
+          appId INTEGER,
+          isInBrowserElement INTEGER)""")
+
+        domain = get_tld(self.page_url)
+        qry = """INSERT INTO 'moz_hosts'
+        VALUES(NULL,'%s','canvas/extractData',1,0,0,0,0);""" % domain
+        cursor.execute(qry)
+        perm_db.commit()
+        cursor.close()
+
+    def init_tbb_profile(self, version):
         profile_directory = cm.get_tbb_profile_path(version)
         self.prof_dir_path = clone_dir_with_timestap(profile_directory)
+        if self.capture_screen and self.page_url:
+            self.add_canvas_permission()
         try:
             tbb_profile = webdriver.FirefoxProfile(self.prof_dir_path)
         except Exception:

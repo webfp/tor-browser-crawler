@@ -20,8 +20,9 @@ class Visit(object):
     """Hold info about a particular visit to a page."""
 
     def __init__(self, batch_num, site_num, instance_num, page_url,
-                 base_dir, tbb_version, tor_controller, crawl, bg_site=None,
-                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False):
+                 base_dir, tbb_version, tor_controller, bg_site=None,
+                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
+                 capture_screen=True):
         self.batch_num = batch_num
         self.site_num = site_num
         self.instance_num = instance_num
@@ -32,8 +33,8 @@ class Visit(object):
         self.visit_dir = None
         self.visit_log_dir = None
         self.tbb_version = tbb_version
+        self.capture_screen = capture_screen
         self.tor_controller = tor_controller
-        self.crawl = crawl
         self.xvfb = xvfb
         self.init_visit_dir()
         self.pcap_path = os.path.join(
@@ -61,7 +62,7 @@ class Visit(object):
         ut.create_dir(self.visit_log_dir)
 
     def get_instance_name(self):
-        """Construct and return a pcap filename."""
+        """Construct and return a filename for the instance."""
         inst_file_name = '{}_{}_{}'\
             .format(self.batch_num, self.site_num, self.instance_num)
         return inst_file_name
@@ -84,6 +85,14 @@ class Visit(object):
         self.tor_controller.close_all_streams()
         if self.xvfb:
             self.vdisplay.stop()
+
+    def take_screenshot(self):
+        try:
+            out_png = os.path.join(self.visit_dir, 'screenshot.png')
+            self.tb_driver.get_screenshot_as_file(out_png)
+        except:
+            wl_log.info("Exception while taking screenshot of: %s"
+                        % self.page_url)
 
     def get_wang_and_goldberg(self):
         """Visit the site according to Wang and Goldberg (WPES'13) settings."""
@@ -108,6 +117,8 @@ class Visit(object):
         wl_log.info("{} loaded in {} sec"
                     .format(self.page_url, page_load_time))
         time.sleep(cm.WAIT_IN_SITE)
+        if self.capture_screen:
+            self.take_screenshot()
         self.cleanup_visit()
 
     def get_multitab(self):
@@ -150,9 +161,11 @@ class Visit(object):
         wl_log.info("{} loaded in {} sec"
                     .format(self.page_url, page_load_time))
         time.sleep(cm.WAIT_IN_SITE)
+        if self.capture_screen:
+            self.take_screenshot()
         self.cleanup_visit()
 
-    def get(self, ip_entry_guard=None):
+    def get(self):
         """Call the specific visit function depending on the experiment."""
         if self.experiment == cm.EXP_TYPE_WANG_AND_GOLDBERG:
             self.get_wang_and_goldberg()

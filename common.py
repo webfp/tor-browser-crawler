@@ -1,11 +1,25 @@
 import os
 import platform
 
+
+class TBBTarballVerificationError(Exception):
+    pass
+
+
+class TBBSigningKeyImportError(Exception):
+    pass
+
+
+class TBBGetRecommendedVersionError(Exception):
+    pass
+
 architecture = platform.architecture()
 if '64' in architecture[0]:
     arch = '64'
+    machine = 'x86_64'
 elif '32' in architecture[0]:
     arch = '32'
+    machine = 'i686'
 else:
     raise RuntimeError('Architecture is not known: %s' % architecture)
 
@@ -50,8 +64,13 @@ BASE_DIR = path.abspath(os.path.dirname(__file__))
 DATASET_DIR = join(BASE_DIR, "datasets")
 ALEXA_DIR = join(DATASET_DIR, "alexa")
 TEST_DIR = join(BASE_DIR, 'test')
-DUMMY_TEST_DIR = join(TEST_DIR, 'dummy')
+TEST_FILES_DIR = join(TEST_DIR, 'files')
+DUMMY_TEST_DIR = join(TEST_FILES_DIR, 'dummy')
 DUMMY_TEST_DIR_TARGZIPPED = DUMMY_TEST_DIR + ".tar.gz"
+TBB_TEST_TARBALL = join(TEST_FILES_DIR,
+                        'tor-browser-linux64-4.0.99_en-US.tar.xz')
+TBB_TEST_TARBALL_EXTRACTED = join(TEST_FILES_DIR,
+                                  'tor-browser-linux64-4.0.99_en-US')
 RESULTS_DIR = join(BASE_DIR, 'results')
 ETC_DIR = join(BASE_DIR, 'etc')
 PERMISSIONS_DB = join(ETC_DIR, 'permissions.sqlite')
