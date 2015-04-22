@@ -54,6 +54,12 @@ class TestTorUtils(unittest.TestCase):
         tb_driver.implicitly_wait(5)
         # test HTTPS Everywhere
         tb_driver.get(HTTP_URL)
+        try:
+            WebDriverWait(tb_driver, 10).until(
+                EC.title_contains("MediaWiki")
+            )
+        except TimeoutException:
+            self.fail("WebGL error alert should be present")
         self.assertEqual(tb_driver.current_url, HTTPS_URL)
         # If enabled NoScript disables WebGL
         webgl_test_url = "https://developer.mozilla.org/samples/webgl/sample1/index.html"  # noqa
