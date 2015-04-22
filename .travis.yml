@@ -9,4 +9,4 @@ install:
   - python setup.py
 before_script:
   - cd test
-script:  sudo py.test
+script:  py.test

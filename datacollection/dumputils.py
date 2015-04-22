@@ -39,10 +39,12 @@ class Sniffer(object):
 
         if pcap_path:
             self.set_pcap_path(pcap_path)
-
-        command = 'dumpcap -a duration:{} -a filesize:{} -i any -s 0 -f \'{}\' -w {}'\
-            .format(cm.SOFT_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE, self.pcap_filter,
-                    self.pcap_file)
+        prefix = ""
+        if "CONTINUOUS_INTEGRATION" in os.environ and "TRAVIS" in os.environ:
+            prefix = "sudo "  # run as sudo in Travis CI since we cannot setcap
+        command = '{}dumpcap -a duration:{} -a filesize:{} -i any -s 0 -f \'{}\' -w {}'\
+            .format(prefix, cm.SOFT_VISIT_TIMEOUT, cm.MAX_DUMP_SIZE,
+                    self.pcap_filter, self.pcap_file)
         wl_log.info(command)
         self.p0 = subprocess.Popen(command, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, shell=True)
