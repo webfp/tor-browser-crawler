@@ -13,6 +13,10 @@ class TBBSigningKeyImportError(Exception):
 class TBBGetRecommendedVersionError(Exception):
     pass
 
+env_vars = os.environ
+# whether we're running on Travis CI or not
+running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
+
 architecture = platform.architecture()
 if '64' in architecture[0]:
     arch = '64'
