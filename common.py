@@ -13,6 +13,11 @@ class TBBSigningKeyImportError(Exception):
 class TBBGetRecommendedVersionError(Exception):
     pass
 
+
+class DumpcapTimeoutError(Exception):
+    pass
+
+
 env_vars = os.environ
 # whether we're running on Travis CI or not
 running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
