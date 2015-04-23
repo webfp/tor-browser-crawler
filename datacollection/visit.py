@@ -94,7 +94,7 @@ class Visit(object):
                                                            out_png))
             self.tb_driver.get_screenshot_as_file(out_png)
             if cm.running_in_CI:
-                wl_log.debug("Screenshot as base64: %s"
+                wl_log.debug("Screenshot data:image/png;base64,%s"
                              % self.tb_driver.get_screenshot_as_base64())
         except:
             wl_log.info("Exception while taking screenshot of: %s"

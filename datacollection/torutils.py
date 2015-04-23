@@ -216,6 +216,7 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
           isInBrowserElement INTEGER)""")
 
         domain = get_tld(self.page_url)
+        wl_log.debug("Adding canvas/extractData permission for %s" % domain)
         qry = """INSERT INTO 'moz_hosts'
         VALUES(NULL,'%s','canvas/extractData',1,0,0,0,0);""" % domain
         cursor.execute(qry)

@@ -71,7 +71,7 @@ class VisitTest(unittest.TestCase):
         self.run_visit(visit)
 
     def test_screen_capture(self):
-        cap_test_url = "https://example.com/"
+        cap_test_url = "https://check.torproject.org/"
         self.setup_crawl_dirs(cap_test_url)
         visit = vi.Visit(self.batch_num, self.site_num,
                          self.instance_num, cap_test_url,
@@ -80,10 +80,10 @@ class VisitTest(unittest.TestCase):
                          experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
                          capture_screen=True)
         self.run_visit(visit)
-        # A blank page for example.com amounts to 5534B. A real screen capture
-        # on the other hand, is 24483B. If the capture is not blank it should
-        # be at least ~6KB.
-        self.assertGreater(os.path.getsize(self.screenshot_path), 6000)
+        # A blank page for https://check.torproject.org/ amounts to ~4.8KB.
+        # A real screen capture on the other hand, is ~57KB. If the capture
+        # is not blank it should be at least greater than 30KB.
+        self.assertGreater(os.path.getsize(self.screenshot_path), 30000)
 
     def test_visit_multitab_exp(self):
         self.setup_crawl_dirs()
