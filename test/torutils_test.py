@@ -44,28 +44,29 @@ class TestTorUtils(unittest.TestCase):
     def test_tb_drv_simple_visit(self):
         tb_driver = TorBrowserDriver()
         tb_driver.get("http://check.torproject.org")
-        tb_driver.implicitly_wait(5)
+        tb_driver.implicitly_wait(60)
         h1_on = tb_driver.find_element_by_css_selector("h1.on")
         self.assertTrue(h1_on)
         tb_driver.quit()
 
     def test_tb_extensions(self):
         tb_driver = TorBrowserDriver()
-        tb_driver.implicitly_wait(5)
+        # tb_driver.implicitly_wait(5)
         # test HTTPS Everywhere
         tb_driver.get(HTTP_URL)
+        time.sleep(1)
         try:
-            WebDriverWait(tb_driver, 10).until(
+            WebDriverWait(tb_driver, 60).until(
                 EC.title_contains("MediaWiki")
             )
         except TimeoutException:
-            self.fail("WebGL error alert should be present")
+            self.fail("The title should contain MediaWiki")
         self.assertEqual(tb_driver.current_url, HTTPS_URL)
-        # If enabled NoScript disables WebGL
+        # NoScript should disable WebGL
         webgl_test_url = "https://developer.mozilla.org/samples/webgl/sample1/index.html"  # noqa
         tb_driver.get(webgl_test_url)
         try:
-            WebDriverWait(tb_driver, 3).until(
+            WebDriverWait(tb_driver, 60).until(
                 EC.alert_is_present()
             )
         except TimeoutException:

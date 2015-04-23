@@ -96,7 +96,11 @@ class VisitTest(unittest.TestCase):
         self.run_visit(visit)
 
     def run_visit(self, visit):
-        visit.get()
+        try:
+            visit.get()
+        except cm.DumpcapTimeoutError:
+            if not cm.running_in_CI:
+                self.fail("Cannot start dumpcap")
         self.check_expected_visit_dirs_and_files(visit)
 
     def setUp(self):
@@ -105,8 +109,7 @@ class VisitTest(unittest.TestCase):
         self.instance_num = 0
 
     def tearDown(self):
-        # shutil.rmtree(self.crawl_dir)
-        pass
+        shutil.rmtree(self.crawl_dir)
 
     @classmethod
     def tearDownClass(cls):
