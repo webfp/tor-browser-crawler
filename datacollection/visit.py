@@ -93,6 +93,9 @@ class Visit(object):
             wl_log.info("Taking screenshot of %s to %s" % (self.page_url,
                                                            out_png))
             self.tb_driver.get_screenshot_as_file(out_png)
+            if cm.running_in_CI:
+                wl_log.debug("Screenshot as base64: %s"
+                             % self.tb_driver.get_screenshot_as_base64())
         except:
             wl_log.info("Exception while taking screenshot of: %s"
                         % self.page_url)

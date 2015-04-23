@@ -96,12 +96,7 @@ class VisitTest(unittest.TestCase):
         self.run_visit(visit)
 
     def run_visit(self, visit):
-        try:
-            visit.get()
-        except cm.DumpcapTimeoutError:  # TODO remove
-            print "DumpcapTimeoutError"
-            if not cm.running_in_CI:
-                self.fail("Cannot start dumpcap")
+        visit.get()
         self.check_expected_visit_dirs_and_files(visit)
 
     def setUp(self):
