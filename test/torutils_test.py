@@ -51,7 +51,6 @@ class TestTorUtils(unittest.TestCase):
 
     def test_tb_extensions(self):
         tb_driver = TorBrowserDriver()
-        # tb_driver.implicitly_wait(5)
         # test HTTPS Everywhere
         tb_driver.get(HTTP_URL)
         time.sleep(1)
@@ -72,6 +71,7 @@ class TestTorUtils(unittest.TestCase):
         except TimeoutException:
             self.fail("WebGL error alert should be present")
         tb_driver.switch_to_alert().dismiss()
+        tb_driver.implicitly_wait(30)
         el = tb_driver.find_element_by_class_name("__noscriptPlaceholder__")
         self.assertTrue(el)
         # sanity check for the above test

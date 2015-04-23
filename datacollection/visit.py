@@ -40,7 +40,7 @@ class Visit(object):
         self.pcap_path = os.path.join(
             self.visit_dir, "{}.pcap".format(self.get_instance_name()))
 
-        if self.xvfb:
+        if self.xvfb and not cm.running_in_CI:
             self.vdisplay = Xvfb(width=cm.XVFB_W, height=cm.XVFB_H)
             self.vdisplay.start()
 
@@ -83,7 +83,7 @@ class Visit(object):
 
         # close all open streams to prevent pollution
         self.tor_controller.close_all_streams()
-        if self.xvfb:
+        if self.xvfb and not cm.running_in_CI:
             self.vdisplay.stop()
 
     def take_screenshot(self):
