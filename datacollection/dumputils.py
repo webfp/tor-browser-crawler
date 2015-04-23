@@ -34,6 +34,9 @@ class Sniffer(object):
 
     def start_capture(self, pcap_path=None, pcap_filter=""):
         """Start capture. Configure sniffer if arguments are given."""
+        if cm.running_in_CI:
+            wl_log.debug("CI run: will not run dumpcap")
+            return False
         if pcap_filter:
             self.set_capture_filter(pcap_filter)
 

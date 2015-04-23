@@ -41,6 +41,7 @@ class Visit(object):
             self.visit_dir, "{}.pcap".format(self.get_instance_name()))
 
         if self.xvfb and not cm.running_in_CI:
+            wl_log.info("Starting XVFBm %sX%s" % (cm.XVFB_W, cm.XVFB_H))
             self.vdisplay = Xvfb(width=cm.XVFB_W, height=cm.XVFB_H)
             self.vdisplay.start()
 
@@ -89,6 +90,8 @@ class Visit(object):
     def take_screenshot(self):
         try:
             out_png = os.path.join(self.visit_dir, 'screenshot.png')
+            wl_log.info("Taking screenshot of %s to %s" % (self.page_url,
+                                                           out_png))
             self.tb_driver.get_screenshot_as_file(out_png)
         except:
             wl_log.info("Exception while taking screenshot of: %s"
