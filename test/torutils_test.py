@@ -14,8 +14,8 @@ from datacollection.torutils import TorController
 
 # Test URLs are taken from the TBB test suit
 # https://gitweb.torproject.org/boklm/tor-browser-bundle-testsuite.git/tree/mozmill-tests/tbb-tests/https-everywhere.js
-HTTP_URL = "http://www.mediawiki.org/wiki/MediaWiki"
-HTTPS_URL = "https://www.mediawiki.org/wiki/MediaWiki"
+HTTP_URL = "http://httpbin.org/"
+HTTPS_URL = "https://httpbin.org/"
 
 
 class TestTorUtils(unittest.TestCase):
@@ -56,10 +56,10 @@ class TestTorUtils(unittest.TestCase):
         time.sleep(1)
         try:
             WebDriverWait(tb_driver, 60).until(
-                EC.title_contains("MediaWiki")
+                EC.title_contains("httpbin")
             )
         except TimeoutException:
-            self.fail("The title should contain MediaWiki")
+            self.fail("The title should contain httpbin")
         self.assertEqual(tb_driver.current_url, HTTPS_URL)
         # NoScript should disable WebGL
         webgl_test_url = "https://developer.mozilla.org/samples/webgl/sample1/index.html"  # noqa
