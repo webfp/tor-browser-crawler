@@ -106,15 +106,20 @@ def get_recommended_tbb_version():
     raise cm.TBBGetRecommendedVersionError()
 
 
-def setup_env():
+def setup_env(tbb_rec_ver=None):
     """Initialize the tbb directory and import TBB signing keys.
 
     Download recommended TBB version and verify it.
     """
     import_tbb_signing_keys()
     ut.create_dir(cm.TBB_BASE_DIR)
-    tbb_rec_ver = get_recommended_tbb_version()
+    if not version:
+        tbb_rec_ver = get_recommended_tbb_version()
     download_tbb_tarball(tbb_rec_ver)
 
 if __name__ == '__main__':
-    setup_env()
+    import sys
+    version = None
+    if len(sys.argv) > 1:
+        version = sys.argv[1]
+    setup_env(version)

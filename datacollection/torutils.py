@@ -1,8 +1,8 @@
 import os
-from selenium import webdriver
+from selenium.webdriver.firefox.webdriver import WebDriver as Firefox
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver import DesiredCapabilities
-from selenium.webdriver import firefox
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import shutil
 import socket
@@ -98,7 +98,7 @@ class TorController(object):
             ut.cancel_timeout()
 
 
-class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
+class TorBrowserDriver(Firefox):
     def __init__(self, tbb_binary_path=None, tbb_profile_dir=None,
                  tbb_logfile_path=None,
                  tbb_version=cm.TBB_DEFAULT_VERSION, page_url="",
@@ -229,7 +229,7 @@ class TorBrowserDriver(webdriver.Firefox, firefox.webdriver.RemoteWebDriver):
         if self.capture_screen and self.page_url:
             self.add_canvas_permission()
         try:
-            tbb_profile = webdriver.FirefoxProfile(self.prof_dir_path)
+            tbb_profile = FirefoxProfile(self.prof_dir_path)
         except Exception:
             wl_log.error("Error creating the TB profile", exc_info=True)
         else:

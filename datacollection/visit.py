@@ -51,7 +51,6 @@ class Visit(object):
                 self.visit_dir, "logs", "firefox.log"),
             tbb_version=tbb_version,
             page_url=page_url)
-
         self.sniffer = Sniffer()  # sniffer to capture the network traffic
 
     def init_visit_dir(self):
