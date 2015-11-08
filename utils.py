@@ -145,8 +145,12 @@ def gen_read_lines(path):
 
 def read_url(uri):
     """Fetch and return a URI content."""
-    w = urlopen(uri)
-    return w.read()
+    try:    
+        w = urlopen(uri)
+        return w.read()
+    except Exception as e:
+        print "Error opening: {}".format(uri)
+	print e
 
 
 def write_to_file(file_path, data):

@@ -54,7 +54,11 @@ def verify_tbb_sig(sig_file):
 def verify_tbb_tarball(tbb_ver, tarball_path, tbb_url):
     tarball_filename = get_tbb_filename(tbb_ver)
     tarball_sha_sum = ut.sha_256_sum_file(tarball_path).lower()
-    sha_sum_url = "%s%s" % (get_tbb_base_url(tbb_ver), "sha256sums.txt")
+    sha256sums_fname = "sha256sums"
+    if tbb_ver.split(".")[0] == "5":
+	sha256sums_fname += "-unsigned-build"
+    sha256sums_fname += ".txt"
+    sha_sum_url = "%s%s" % (get_tbb_base_url(tbb_ver), sha256sums_fname)
     sha_sum_path = "%s%s" % (tarball_path, ".sha256sums.txt")
     sha_sum_sig_url = "%s%s" % (sha_sum_url, ".asc")
     sha_sum_sig_path = "%s%s" % (sha_sum_path, ".asc")
@@ -86,8 +90,7 @@ def import_gpg_key(key_fp):
 def import_tbb_signing_keys():
     """Import signing GPG keys for TBB."""
     tbb_devs_key = '0x4E2C6E8793298290'
-    erinns_key = '0x416F061063FEE659'  # old key
-    if import_gpg_key(tbb_devs_key) and import_gpg_key(erinns_key):
+    if import_gpg_key(tbb_devs_key):
         return True
     else:
         raise cm.TBBSigningKeyImportError("Cannot import TBB signing keys")
