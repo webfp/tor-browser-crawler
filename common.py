@@ -64,9 +64,10 @@ TBB_WANG_AND_GOLDBERG = TBB_V_2_4_7_A1
 
 TBB_V_3_5 = "3.5"
 TBB_V_4_0_8 = "4.0.8"
-TBB_DEFAULT_VERSION = TBB_V_4_0_8
+TBB_V_5_0_4 = "5.0.4"
+TBB_DEFAULT_VERSION = TBB_V_5_0_4
 
-TBB_KNOWN_VERSIONS = [TBB_V_2_4_7_A1, TBB_V_3_5, TBB_V_4_0_8]
+TBB_KNOWN_VERSIONS = [TBB_V_5_0_4, TBB_V_2_4_7_A1, TBB_V_3_5, TBB_V_4_0_8]
 
 # Default paths
 BASE_DIR = path.abspath(os.path.dirname(__file__))
@@ -122,6 +123,7 @@ TBB_V4_FF_BIN_PATH = join('Browser', 'firefox')
 TBB_FF_BIN_PATH_DICT = {"2": TBB_V2_FF_BIN_PATH,
                         "3": TBB_V3_FF_BIN_PATH,
                         "4": TBB_V4_FF_BIN_PATH,
+                        "5": TBB_V4_FF_BIN_PATH,
                         }
 
 # Path to Firefox profile in TBB dir
@@ -133,6 +135,7 @@ TBB_V4_PROFILE_PATH = join('Browser', 'TorBrowser', 'Data',
 TBB_PROFILE_DIR_DICT = {"2": TBB_V2_PROFILE_PATH,
                         "3": TBB_V3_PROFILE_PATH,
                         "4": TBB_V4_PROFILE_PATH,
+                        "5": TBB_V4_PROFILE_PATH,
                         }
 
 # Path to Tor binary in TBB dir
@@ -143,6 +146,7 @@ TOR_V4_BINARY_PATH = join('Browser', 'TorBrowser', 'Tor', 'tor')
 TOR_BINARY_PATH_DICT = {"2": TOR_V2_BINARY_PATH,
                         "3": TOR_V3_BINARY_PATH,
                         "4": TOR_V4_BINARY_PATH,
+                        "5": TOR_V4_BINARY_PATH,
                         }
 # Path to Tor binary in TBB dir
 TOR_V2_DATA_DIR = join('Data', 'Tor')
@@ -152,6 +156,7 @@ TOR_V4_DATA_DIR = join('Browser', 'TorBrowser', 'Data', 'Tor')
 TOR_DATA_DIR_DICT = {"2": TOR_V2_DATA_DIR,
                      "3": TOR_V3_DATA_DIR,
                      "4": TOR_V4_DATA_DIR,
+                     "5": TOR_V4_DATA_DIR,
                      }
 
 
