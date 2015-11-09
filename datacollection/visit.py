@@ -102,11 +102,10 @@ class Visit(object):
     def get_wang_and_goldberg(self):
         """Visit the site according to Wang and Goldberg (WPES'13) settings."""
         ut.timeout(cm.HARD_VISIT_TIMEOUT)  # set timeout to stop the visit
-        guard_ips = [gip for gip in self.tor_controller.get_guard_ips()]
+        guard_ips = self.tor_controller.get_guard_ips()
         self.sniffer.start_capture(
             self.pcap_path,
-            #'tcp and not host %s and not host %s and not host %s'
-            'tcp' + (' or host {}' * len(guard_ips)).format(*guard_ips))
+            ('tcp and (' + ('host {} or' * len(guard_ips))[:-3] +')').format(*guard_ips))
 
         time.sleep(cm.PAUSE_BETWEEN_INSTANCES)
         try:

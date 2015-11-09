@@ -34,6 +34,8 @@ class TorController(object):
     def get_guard_ips(self):
         ips = []
         for circ in self.controller.get_circuits():
+            if len(circ.path) == 0:
+                continue
             ip = self.controller.get_network_status(circ.path[0][0]).address
             if ip not in ips:
                 ips.append(ip)
