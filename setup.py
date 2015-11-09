@@ -113,7 +113,7 @@ def setup_env(tbb_rec_ver=None):
     """
     import_tbb_signing_keys()
     ut.create_dir(cm.TBB_BASE_DIR)
-    if not version:
+    if not tbb_rec_ver:
         tbb_rec_ver = get_recommended_tbb_version()
     download_tbb_tarball(tbb_rec_ver)
 
