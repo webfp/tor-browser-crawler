@@ -31,6 +31,11 @@ class TorController(object):
     def tor_log_handler(self, line):
         wl_log.info(term.format(line))
 
+    def get_guard_ips():
+        for router_status in self.controller.get_network_statuses():
+            if 'Guard' in router_status.flags:
+                yield router_status.address
+
     def restart_tor(self):
         """Kill current Tor process and run a new one."""
         self.kill_tor_proc()
