@@ -31,7 +31,15 @@ class TorController(object):
     def tor_log_handler(self, line):
         wl_log.info(term.format(line))
 
-    def get_guard_ips():
+    def get_guard_ips(self):
+        ips = []
+        for circ in self.controller.get_circuits():
+            ip = self.controller.get_network_status(circ.path[0][0]).address
+            if ip not in ips:
+                ips.append(ip)
+        return ips
+
+    def get_all_guard_ips(self):
         for router_status in self.controller.get_network_statuses():
             if 'Guard' in router_status.flags:
                 yield router_status.address
