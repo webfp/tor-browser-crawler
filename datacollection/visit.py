@@ -6,6 +6,7 @@ import os
 import common as cm
 from dumputils import Sniffer
 import time
+from scapy.all import *
 import utils as ut
 
 
@@ -67,6 +68,18 @@ class Visit(object):
             .format(self.batch_num, self.site_num, self.instance_num)
         return inst_file_name
 
+    def filter_guards_from_pcap(self):
+        guard_ips = [gip for gip in self.tor_controller.get_all_guard_ips()]
+        preader = PcapReader(self.pcap_path)
+        pcap_filtered = [p for p in preader
+                         if (IP not in p) or (p.payload.dst in guard_ips
+                                              or p.payload.src in guard_ips)]
+        wrpcap(self.pcap_path, pcap_filtered)
+
+    def post_crawl(self):
+        self.filter_guards_from_pcap()
+        # TODO: add some sanity checks?
+
     def cleanup_visit(self):
         """Kill sniffer and Tor browser if they're running."""
         wl_log.info("Cleaning up visit.")
@@ -80,6 +93,9 @@ class Visit(object):
             # shutil.rmtree(self.tb_driver.prof_dir_path)
             wl_log.info("Quitting selenium driver...")
             self.tb_driver.quit()
+
+        # after closing driver and stoping sniffer, we run postcrawl
+        self.post_crawl()
 
         # close all open streams to prevent pollution
         self.tor_controller.close_all_streams()
@@ -102,11 +118,7 @@ class Visit(object):
     def get_wang_and_goldberg(self):
         """Visit the site according to Wang and Goldberg (WPES'13) settings."""
         ut.timeout(cm.HARD_VISIT_TIMEOUT)  # set timeout to stop the visit
-        guard_ips = self.tor_controller.get_guard_ips()
-        self.sniffer.start_capture(
-            self.pcap_path,
-            ('tcp and (' + (' host {} or' * len(guard_ips))[:-3] +')').format(*guard_ips))
-
+        self.sniffer.start_capture(self.pcap_path, 'tcp')
         time.sleep(cm.PAUSE_BETWEEN_INSTANCES)
         try:
             self.tb_driver.set_page_load_timeout(cm.SOFT_VISIT_TIMEOUT)
