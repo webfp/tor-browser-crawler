@@ -105,7 +105,7 @@ class Visit(object):
         guard_ips = self.tor_controller.get_guard_ips()
         self.sniffer.start_capture(
             self.pcap_path,
-            ('tcp and (' + ('host {} or' * len(guard_ips))[:-3] +')').format(*guard_ips))
+            ('tcp and (' + (' host {} or' * len(guard_ips))[:-3] +')').format(*guard_ips))
 
         time.sleep(cm.PAUSE_BETWEEN_INSTANCES)
         try:
