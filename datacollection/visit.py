@@ -70,11 +70,19 @@ class Visit(object):
 
     def filter_guards_from_pcap(self):
         guard_ips = [gip for gip in self.tor_controller.get_all_guard_ips()]
-        preader = PcapReader(self.pcap_path)
-        pcap_filtered = [p for p in preader
-                         if (IP not in p) or (p.payload.dst in guard_ips
+        orig_pcap = "original." + self.pcap_path
+        copyfile(self.pcap_path, orig_pcap)
+        try:
+            preader = PcapReader(orig_pcap)
+            pcap_filtered = [p for p in preader
+                            if (IP not in p) or (p.payload.dst in guard_ips
                                               or p.payload.src in guard_ips)]
-        wrpcap(self.pcap_path, pcap_filtered)
+            wrpcap(self.pcap_path, pcap_filtered)
+        except Exception as e:
+            wl_log("ERROR: filtering pcap file: %s. Check old pcap: %s",
+                   e, orig_pcap)
+        else:
+            remove(orig_pcap)
 
     def post_crawl(self):
         self.filter_guards_from_pcap()
