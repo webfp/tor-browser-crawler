@@ -9,7 +9,7 @@ For the crawl parameters such as `batch` and `instance` refer to the ACM WPES’
 Requirements
 ---------------
 * Linux packages: ```python tcpdump wireshark Xvfb```
-* Python packages: ```selenium requests stem psutil(version < 3) tld xvfbwrapper scapy scapy-ssl_tls```
+* Python packages: ```selenium requests stem psutil(version < 3) tld xvfbwrapper scapy```
 
 # Getting started
 
