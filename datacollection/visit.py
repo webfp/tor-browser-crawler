@@ -3,6 +3,7 @@ from xvfbwrapper import Xvfb
 from torutils import TorBrowserDriver
 from log import wl_log
 import os
+from shutil import copyfile
 import common as cm
 from dumputils import Sniffer
 import time
@@ -70,7 +71,7 @@ class Visit(object):
 
     def filter_guards_from_pcap(self):
         guard_ips = [gip for gip in self.tor_controller.get_all_guard_ips()]
-        orig_pcap = "original." + self.pcap_path
+        orig_pcap = self.pcap_path + ".original"
         copyfile(self.pcap_path, orig_pcap)
         try:
             preader = PcapReader(orig_pcap)
@@ -82,7 +83,7 @@ class Visit(object):
             wl_log("ERROR: filtering pcap file: %s. Check old pcap: %s",
                    e, orig_pcap)
         else:
-            remove(orig_pcap)
+            os.remove(orig_pcap)
 
     def post_crawl(self):
         self.filter_guards_from_pcap()
