@@ -1,3 +1,4 @@
+from os.path import abspath
 import argparse
 import traceback
 import logging
@@ -36,6 +37,9 @@ if __name__ == '__main__':
     parser.add_argument('--stop', help='Crawl URLs until this line')
     parser.add_argument('--action', help='Type of action: crawl, pack_data')
     parser.add_argument('-i', '--input', help='Input data (crawl dir, etc. )')
+    parser.add_argument('-o', '--output',
+                        help='Directory to dump results (default=./results).',
+                        default=cm.RESULTS_DIR)
     parser.add_argument('-x', '--xvfb', help='Use XVFB (for headless testing)',
                         action='store_true', default=False)
     parser.add_argument('-c', '--capture-screen',
@@ -94,8 +98,10 @@ if __name__ == '__main__':
         ut.die("Version of Tor browser is not recognized."
                " Use --help to see which are the accepted values.")
 
+    output = abspath(args.output)
+
     crawler = Crawler(torrc_dict, url_list, tbb_version,
-                      experiment, xvfb, capture_screen)
+                      experiment, xvfb, capture_screen, output)
     wl_log.info("Command line parameters: %s" % sys.argv)
 
     # Run the crawl

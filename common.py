@@ -46,7 +46,7 @@ SOFT_VISIT_TIMEOUT = 120     # timeout used by selenium and dumpcap
 # signal based hard timeout in case soft timeout fails
 HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
 # max dumpcap size in KB
-MAX_DUMP_SIZE = 30000
+MAX_DUMP_SIZE = 40000
 # max filename length
 MAX_FNAME_LENGTH = 200
 

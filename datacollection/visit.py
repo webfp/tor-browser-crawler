@@ -70,17 +70,23 @@ class Visit(object):
         return inst_file_name
 
     def filter_guards_from_pcap(self):
-        guard_ips = [gip for gip in self.tor_controller.get_all_guard_ips()]
+        guard_ips = set([ip for ip in self.tor_controller.get_all_guard_ips()])
+        wl_log.debug("Found %s guards in the concensus.", len(guard_ips))
         orig_pcap = self.pcap_path + ".original"
         copyfile(self.pcap_path, orig_pcap)
         try:
             preader = PcapReader(orig_pcap)
-            pcap_filtered = [p for p in preader
-                            if (IP not in p) or (p.payload.dst in guard_ips
-                                              or p.payload.src in guard_ips)]
+            pcap_filtered = []
+            for p in preader:
+                if IP not in p:
+                    pcap_filtered.append(p)
+                    continue
+                ip = p.payload
+                if ip.dst in guard_ips or ip.src in guard_ips:
+                    pcap_filtered.append(p)
             wrpcap(self.pcap_path, pcap_filtered)
         except Exception as e:
-            wl_log("ERROR: filtering pcap file: %s. Check old pcap: %s",
+            wl_log.error("ERROR: filtering pcap file: %s. Check old pcap: %s",
                    e, orig_pcap)
         else:
             os.remove(orig_pcap)
@@ -127,7 +133,9 @@ class Visit(object):
     def get_wang_and_goldberg(self):
         """Visit the site according to Wang and Goldberg (WPES'13) settings."""
         ut.timeout(cm.HARD_VISIT_TIMEOUT)  # set timeout to stop the visit
-        self.sniffer.start_capture(self.pcap_path, 'tcp')
+        self.sniffer.start_capture(self.pcap_path,
+                                   'tcp and not host %s and not tcp port 22 and not tcp port 20'
+                                   % LOCALHOST_IP)
         time.sleep(cm.PAUSE_BETWEEN_INSTANCES)
         try:
             self.tb_driver.set_page_load_timeout(cm.SOFT_VISIT_TIMEOUT)
@@ -154,8 +162,8 @@ class Visit(object):
         # load a blank page - a page is needed to send keys to the browser
         self.tb_driver.get(BAREBONE_HOME_PAGE)
         self.sniffer.start_capture(self.pcap_path,
-                                   'tcp and not host %s and not host %s'
-                                   % (VBOX_GATEWAY_IP, LOCALHOST_IP))
+                                   'tcp and not host %s and not tcp port 22 and not tcp port 20'
+                                   % LOCALHOST_IP)
 
         time.sleep(cm.PAUSE_BETWEEN_INSTANCES)
         try:

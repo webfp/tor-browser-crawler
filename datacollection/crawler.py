@@ -14,15 +14,16 @@ class Crawler(object):
 
     def __init__(self, torrc_dict, url_list, tbb_version,
                  experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
-                 capture_screen=True):
+                 capture_screen=True, output=cm.RESULTS_DIR):
         # Create instance of Tor controller and sniffer used for the crawler
         self.crawl_dir = None
         self.crawl_logs_dir = None
         self.visit = None
+        self.output = output
         self.urls = url_list  # keep list of urls we'll visit
         self.init_crawl_dirs()  # initializes crawl_dir
         self.tor_log = os.path.join(self.crawl_logs_dir, "tor.log")
-        linkname = os.path.join(cm.RESULTS_DIR, 'latest_tor_log')
+        linkname = os.path.join(self.output, 'latest_tor_log')
         add_symlink(linkname, self.tor_log)
         self.tbb_version = tbb_version
         self.experiment = experiment
@@ -33,7 +34,7 @@ class Crawler(object):
         self.capture_screen = capture_screen
         self.xvfb = xvfb
         add_log_file_handler(wl_log, self.log_file)
-        linkname = os.path.join(cm.RESULTS_DIR, 'latest_crawl_log')
+        linkname = os.path.join(self.output, 'latest_crawl_log')
         add_symlink(linkname, self.log_file)  # add a symbolic link
 
     def crawl(self, num_batches=cm.NUM_BATCHES,
@@ -105,7 +106,7 @@ class Crawler(object):
     def init_crawl_dirs(self):
         """Creates results and logs directories for this crawl."""
         self.crawl_dir, self.crawl_logs_dir = self.create_crawl_dir()
-        sym_link = os.path.join(cm.RESULTS_DIR, 'latest')
+        sym_link = os.path.join(self.output, 'latest')
         add_symlink(sym_link, self.crawl_dir)  # add a symbolic link
         # Create crawl log
         self.log_file = os.path.join(self.crawl_logs_dir, "crawl.log")
@@ -125,8 +126,8 @@ class Crawler(object):
 
     def create_crawl_dir(self):
         """Create a timestamped crawl."""
-        ut.create_dir(cm.RESULTS_DIR)  # ensure that we've a results dir
-        crawl_dir_wo_ts = os.path.join(cm.RESULTS_DIR, 'crawl')
+        ut.create_dir(self.output)  # ensure that we've a results dir
+        crawl_dir_wo_ts = os.path.join(self.output, 'crawl')
         crawl_dir = ut.create_dir(ut.append_timestamp(crawl_dir_wo_ts))
         crawl_logs_dir = os.path.join(crawl_dir, 'logs')
         ut.create_dir(crawl_logs_dir)
