@@ -92,7 +92,7 @@ class Visit(object):
             os.remove(orig_pcap)
 
     def post_crawl(self):
-        self.filter_guards_from_pcap()
+        pass
         # TODO: add some sanity checks?
 
     def cleanup_visit(self):
@@ -104,18 +104,23 @@ class Visit(object):
         if self.sniffer and self.sniffer.is_recording:
             wl_log.info("Stopping sniffer...")
             self.sniffer.stop_capture()
+
+        # remove non-tor traffic
+        self.filter_guards_from_pcap()
+
         if self.tb_driver and self.tb_driver.is_running:
             # shutil.rmtree(self.tb_driver.prof_dir_path)
             wl_log.info("Quitting selenium driver...")
             self.tb_driver.quit()
 
-        # after closing driver and stoping sniffer, we run postcrawl
-        self.post_crawl()
-
         # close all open streams to prevent pollution
         self.tor_controller.close_all_streams()
         if self.xvfb and not cm.running_in_CI:
+            wl_log.info("Stopping display...")
             self.vdisplay.stop()
+
+        # after closing driver and stoping sniffer, we run postcrawl
+        self.post_crawl()
 
     def take_screenshot(self):
         try:

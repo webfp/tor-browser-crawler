@@ -5,6 +5,7 @@ from selenium.webdriver import DesiredCapabilities
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 import shutil
+import signal
 import socket
 from stem.control import Controller
 import stem.process
@@ -56,10 +57,13 @@ class TorController(object):
         """Kill Tor process."""
         if self.tor_process:
             wl_log.info("Killing tor process")
-            self.tor_process.kill()
+            os.kill(self.tor_process.pid, signal.SIGTERM)
         if self.tmp_tor_data_dir and os.path.isdir(self.tmp_tor_data_dir):
             wl_log.info("Removing tmp tor data dir")
-            shutil.rmtree(self.tmp_tor_data_dir)
+            try:
+                shutil.rmtree(self.tmp_tor_data_dir)
+            except OSError as e:
+                wl_log.warning("It seems dir is already gone: %s", e)
 
     def launch_tor_service(self, logfile='/dev/null'):
         """Launch Tor service and return the process."""
