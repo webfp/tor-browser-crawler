@@ -57,7 +57,7 @@ class TorController(object):
         """Kill Tor process."""
         if self.tor_process:
             wl_log.info("Killing tor process")
-            os.kill(self.tor_process.pid, signal.SIGTERM)
+            os.kill(self.tor_process.pid, signal.SIGKILL)
         if self.tmp_tor_data_dir and os.path.isdir(self.tmp_tor_data_dir):
             wl_log.info("Removing tmp tor data dir")
             try:
