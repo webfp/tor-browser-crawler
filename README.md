@@ -25,7 +25,7 @@ Requirements
 
  * Change MTU to standard ethernet MTU (1500 bytes): `sudo ifconfig <interface> mtu 1500`
 
- * Disable offloads: `sudo ethtool -K <interface> tx off rx off tso off gso off`
+ * Disable offloads: `sudo ethtool -K <interface> tx off rx off tso off gso off gro off`
 
  * See the [Wireshark Offloading page](https://wiki.wireshark.org/CaptureSetup/Offloading) for more info.
 
