@@ -5,8 +5,8 @@ import shutil
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import common as cm
 import utils as ut
-import datacollection.visit as vi
-from datacollection.torutils import TorController
+import tbcrawler.visit as vi
+from tbselenium.torcontroller import TorController
 join = os.path.join
 TEST_URL = "https://torproject.org"
 

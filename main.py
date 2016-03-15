@@ -6,7 +6,7 @@ import common as cm
 import sys
 from log import wl_log
 import utils as ut
-from datacollection.crawler import Crawler
+from tbcrawler.crawler import Crawler
 
 
 if __name__ == '__main__':

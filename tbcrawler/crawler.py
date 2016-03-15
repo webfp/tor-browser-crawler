@@ -1,7 +1,7 @@
 from log import wl_log, add_log_file_handler, add_symlink
 from random import choice
 from selenium.common.exceptions import TimeoutException
-from torutils import TorController
+from tbselenium.torcontroller import TorController
 from visit import Visit
 import common as cm
 import os

@@ -1,15 +1,16 @@
-from selenium.webdriver.common.keys import Keys
-from xvfbwrapper import Xvfb
-from torutils import TorBrowserDriver
-from log import wl_log
 import os
-from shutil import copyfile
-import common as cm
-from dumputils import Sniffer
 import time
-from scapy.all import *
-import utils as ut
+from shutil import copyfile
 
+from scapy.all import *
+from selenium.webdriver.common.keys import Keys
+from tbselenium.tbdriver import TorBrowserDriver
+from xvfbwrapper import Xvfb
+
+import common as cm
+import utils as ut
+from dumputils import Sniffer
+from log import wl_log
 
 BAREBONE_HOME_PAGE = "file://%s/barebones.html" % cm.ETC_DIR
 
@@ -40,7 +41,7 @@ class Visit(object):
         self.xvfb = xvfb
         self.init_visit_dir()
         self.pcap_path = os.path.join(
-            self.visit_dir, "{}.pcap".format(self.get_instance_name()))
+                self.visit_dir, "{}.pcap".format(self.get_instance_name()))
 
         if self.xvfb and not cm.running_in_CI:
             wl_log.info("Starting XVFBm %sX%s" % (cm.XVFB_W, cm.XVFB_H))
@@ -49,10 +50,10 @@ class Visit(object):
 
         # Create new instance of TorBrowser driver
         self.tb_driver = TorBrowserDriver(
-            tbb_logfile_path=os.path.join(
-                self.visit_dir, "logs", "firefox.log"),
-            tbb_version=tbb_version,
-            page_url=page_url)
+                tbb_logfile_path=os.path.join(
+                        self.visit_dir, "logs", "firefox.log"),
+                tbb_version=tbb_version,
+                page_url=page_url)
         self.sniffer = Sniffer()  # sniffer to capture the network traffic
 
     def init_visit_dir(self):
@@ -65,7 +66,7 @@ class Visit(object):
 
     def get_instance_name(self):
         """Construct and return a filename for the instance."""
-        inst_file_name = '{}_{}_{}'\
+        inst_file_name = '{}_{}_{}' \
             .format(self.batch_num, self.site_num, self.instance_num)
         return inst_file_name
 
@@ -87,7 +88,7 @@ class Visit(object):
             wrpcap(self.pcap_path, pcap_filtered)
         except Exception as e:
             wl_log.error("ERROR: filtering pcap file: %s. Check old pcap: %s",
-                   e, orig_pcap)
+                         e, orig_pcap)
         else:
             os.remove(orig_pcap)
 

@@ -4,7 +4,7 @@ import unittest
 from urllib2 import urlopen
 import time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from datacollection.dumputils import Sniffer
+from tbcrawler.dumputils import Sniffer
 import common as cm
 
 TEST_CAP_FILTER = 'host 255.255.255.255'

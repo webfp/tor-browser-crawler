@@ -3,7 +3,7 @@ import sys
 import unittest
 import shutil
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from datacollection.crawler import Crawler
+from tbcrawler.crawler import Crawler
 import common as cm
 
 TEST_URL_LIST = ['https://www.google.de',

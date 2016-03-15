@@ -9,8 +9,8 @@ from selenium.webdriver.support import expected_conditions as EC
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 import common as cm
 from utils import get_hash_of_directory
-from datacollection.torutils import TorBrowserDriver
-from datacollection.torutils import TorController
+from tbselenium.tbdriver import TorBrowserDriver
+from tbselenium.torcontroller import TorController
 
 # Test URLs are taken from the TBB test suit
 # https://gitweb.torproject.org/boklm/tor-browser-bundle-testsuite.git/tree/mozmill-tests/tbb-tests/https-everywhere.js
