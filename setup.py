@@ -1,17 +1,10 @@
 import os
-import common as cm
 import subprocess
+
+import common as cm
 import utils as ut
+from common import get_tbb_filename, TBB_BASE_DIR, get_recommended_tbb_version
 from log import wl_log
-
-
-def get_tbb_filename(tbb_ver):
-    if int(tbb_ver.split(".")[0]) <= 2:
-        file_name = 'tor-browser-gnu-linux-%s-%s-dev-en-US.tar.gz' %\
-            (cm.machine, tbb_ver)
-    else:
-        file_name = 'tor-browser-linux%s-%s_en-US.tar.xz' % (cm.arch, tbb_ver)
-    return file_name
 
 
 def get_tbb_base_url(tbb_ver):
@@ -45,9 +38,8 @@ def download_tbb_tarball(tbb_ver, dl_dir=""):
 
 
 def verify_tbb_sig(sig_file):
-    """Verify the ."""
-    ret_code = subprocess.Popen(['/usr/bin/gpg',
-                                 '--verify', sig_file]).wait()
+    """Verify the signature of a file."""
+    ret_code = subprocess.Popen(['/usr/bin/gpg', '--verify', sig_file]).wait()
     return True if ret_code == 0 else False
 
 
@@ -96,26 +88,17 @@ def import_tbb_signing_keys():
         raise cm.TBBSigningKeyImportError("Cannot import TBB signing keys")
 
 
-def get_recommended_tbb_version():
-    """Get the recommended TBB version from RecommendedTBBVersions file."""
-    tbb_versions_url = "https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions"  # noqa
-    versions = ut.read_url(tbb_versions_url)
-    for line in versions.split():
-        if "Linux" in line:
-            return line.split("-")[0].lstrip('"')
-    raise cm.TBBGetRecommendedVersionError()
-
-
 def setup_env(tbb_rec_ver=None):
     """Initialize the tbb directory and import TBB signing keys.
 
     Download recommended TBB version and verify it.
     """
     import_tbb_signing_keys()
-    ut.create_dir(cm.TBB_BASE_DIR)
+    ut.create_dir(TBB_BASE_DIR)
     if not tbb_rec_ver:
         tbb_rec_ver = get_recommended_tbb_version()
     download_tbb_tarball(tbb_rec_ver)
+
 
 if __name__ == '__main__':
     import sys

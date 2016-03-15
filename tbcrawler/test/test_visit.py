@@ -1,18 +1,18 @@
 import os
-import sys
-import unittest
+from os.path import join
 import shutil
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import common as cm
-import utils as ut
-import tbcrawler.visit as vi
+import unittest
+
 from tbselenium.torcontroller import TorController
-join = os.path.join
+
+import common as cm
+import tbcrawler.visit as vi
+import utils as ut
+
 TEST_URL = "https://torproject.org"
 
 
 class VisitTest(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.tor_controller = TorController(cm.TORRC_WANG_AND_GOLDBERG,
@@ -49,8 +49,8 @@ class VisitTest(unittest.TestCase):
         self.crawl_dir = ut.create_dir(join(cm.TEST_FILES_DIR, crawl_name))
         batch_dir = ut.create_dir(join(self.crawl_dir, str(self.batch_num)))
         self.site_dir = ut.create_dir(join(batch_dir,
-                                      ut.get_filename_from_url(test_url,
-                                                               self.site_num)))
+                                           ut.get_filename_from_url(test_url,
+                                                                    self.site_num)))
 
     def test_visit_with_defaults(self):
         self.setup_crawl_dirs()
@@ -111,6 +111,7 @@ class VisitTest(unittest.TestCase):
     def tearDownClass(cls):
         # cls.tor_process.kill()
         cls.tor_controller.kill_tor_proc()
+
 
 if __name__ == "__main__":
     unittest.main()

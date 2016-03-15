@@ -27,8 +27,9 @@ class Crawler(object):
         add_symlink(linkname, self.tor_log)
         self.tbb_version = tbb_version
         self.experiment = experiment
-        self.tor_controller = TorController(torrc_dict, tbb_version,
-                                            self.tor_log)
+        self.tor_controller = TorController(tbb_path=cm.TBB_PATH,
+                                            torrc_dict=torrc_dict,
+                                            tor_log=self.tor_log)
         self.tor_process = None
         self.tb_driver = None
         self.capture_screen = capture_screen

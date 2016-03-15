@@ -1,6 +1,8 @@
 import os
 import platform
 
+import utils as ut
+
 
 class TBBTarballVerificationError(Exception):
     pass
@@ -71,9 +73,10 @@ TBB_KNOWN_VERSIONS = [TBB_V_5_0_4, TBB_V_2_4_7_A1, TBB_V_3_5, TBB_V_4_0_8]
 
 # Default paths
 BASE_DIR = path.abspath(os.path.dirname(__file__))
+SRC_DIR = join(BASE_DIR, 'tbcrawler')
 DATASET_DIR = join(BASE_DIR, "datasets")
 ALEXA_DIR = join(DATASET_DIR, "alexa")
-TEST_DIR = join(BASE_DIR, 'test')
+TEST_DIR = join(SRC_DIR, 'test')
 TEST_FILES_DIR = join(TEST_DIR, 'files')
 DUMMY_TEST_DIR = join(TEST_FILES_DIR, 'dummy')
 DUMMY_TEST_DIR_TARGZIPPED = DUMMY_TEST_DIR + ".tar.gz"
@@ -86,6 +89,7 @@ ETC_DIR = join(BASE_DIR, 'etc')
 PERMISSIONS_DB = join(ETC_DIR, 'permissions.sqlite')
 HOME_PATH = expanduser('~')
 TBB_BASE_DIR = join(BASE_DIR, 'tbb')
+
 
 # Top URLs localized (DE) to prevent the effect of localization
 LOCALIZED_DATASET = join(ETC_DIR, "localized-urls-100-top.csv")
@@ -207,3 +211,26 @@ def get_tor_data_path(version, os_name="linux", lang="en-US"):
     data_path = TOR_DATA_DIR_DICT[major]
     tbb_path = get_tbb_path(version, os_name, lang)
     return join(tbb_path, data_path)
+
+
+def get_recommended_tbb_version():
+    """Get the recommended TBB version from RecommendedTBBVersions file."""
+    tbb_versions_url = "https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions"  # noqa
+    versions = ut.read_url(tbb_versions_url)
+    for line in versions.split():
+        if "Linux" in line:
+            return line.split("-")[0].lstrip('"')
+    raise TBBGetRecommendedVersionError()
+
+
+def get_tbb_filename(tbb_ver):
+    if int(tbb_ver.split(".")[0]) <= 2:
+        file_name = 'tor-browser-gnu-linux-%s-%s-dev-en-US.tar.gz' %\
+            (machine, tbb_ver)
+    else:
+        file_name = 'tor-browser-linux%s-%s_en-US.tar.xz' % (arch, tbb_ver)
+    return file_name
+
+# TBB PATH
+RECOMMENDED_TBB_VERSION = get_recommended_tbb_version()
+TBB_PATH = join(TBB_BASE_DIR, get_tbb_filename(RECOMMENDED_TBB_VERSION)[:-7])

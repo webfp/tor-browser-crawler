@@ -1,12 +1,10 @@
-from os.path import dirname, realpath, join
-import sys
 import unittest
-sys.path.append(dirname(dirname(realpath(__file__))))
+from os.path import join
+
 import common as cm
 
 
-class Test(unittest.TestCase):
-
+class CommonTest(unittest.TestCase):
     def test_get_tbb_major_version(self):
         ver_dict = {"2.3.25-15": "2",
                     "3.5": "3",
@@ -110,6 +108,11 @@ class Test(unittest.TestCase):
         self.assert_(cm.TOR_V4_BINARY_PATH in tor_bin_path_v4_0_8)
         self.assert_(cm.get_tbb_dirname(cm.TBB_V_4_0_8) in
                      tor_bin_path_v4_0_8)
+
+    def test_get_recommended_tbb_version(self):
+        rec_ver = cm.get_recommended_tbb_version()
+        self.assertGreaterEqual(rec_ver.split('.')[0], 4)
+
 
 if __name__ == "__main__":
     unittest.main()

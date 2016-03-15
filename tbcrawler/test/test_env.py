@@ -1,9 +1,9 @@
-import os
-import sys
-import unittest
 import commands
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import os
+import unittest
+
 import common as cm
+from common import get_recommended_tbb_version
 
 
 class Test(unittest.TestCase):
@@ -21,7 +21,7 @@ class Test(unittest.TestCase):
         cmd = 'which %s' % pkg_name
         status, _ = self.run_cmd(cmd)
         self.assertFalse(status, "%s is not installed."
-                         "Install it with sudo apt-get install %s" %
+                                 "Install it with sudo apt-get install %s" %
                          (pkg_name, pkg_name))
 
     def test_dumpcap(self):
@@ -50,13 +50,13 @@ class Test(unittest.TestCase):
                         'Cannot find base dir path %s' % cm.BASE_DIR)
 
     def test_tb_bin_path(self):
-        tb_bin_path = cm.get_tb_bin_path(version=cm.TBB_DEFAULT_VERSION)
+        tb_bin_path = cm.get_tb_bin_path(version=get_recommended_tbb_version())
         self.assertTrue(os.path.isfile(tb_bin_path),
                         'Cannot find Tor Browser binary path %s'
                         % tb_bin_path)
 
     def test_tbb_profile_path(self):
-        tbb_profile_path = cm.get_tbb_profile_path(cm.TBB_DEFAULT_VERSION)
+        tbb_profile_path = cm.get_tbb_profile_path(version=get_recommended_tbb_version())
         self.assertTrue(os.path.isdir(tbb_profile_path),
                         'Cannot find Tor Browser profile dir %s'
                         % tbb_profile_path)

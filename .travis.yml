@@ -11,5 +11,5 @@ install:
   - python setup.py
 before_script:
   - cd test  
-script:  py.test -k 'not dumputils_test.py'
+script:  py.test -k 'not test_dumputils.py'
 

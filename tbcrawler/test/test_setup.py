@@ -1,16 +1,16 @@
-import unittest
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import setup as se
+import unittest
+from os.path import join
+
 import common as cm
+import setup as se
+
 arch = cm.arch
 machine = cm.machine
 from shutil import rmtree
 
 
-class Test(unittest.TestCase):
-
+class SetupTest(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -30,13 +30,13 @@ class Test(unittest.TestCase):
                          tbb_4_0_8_url)
 
     def test_get_tbb_filename(self):
-        tbb_2_4_7A1 = "tor-browser-gnu-linux-%s-2.4.7-alpha-1-dev-en-US.tar.gz"\
-            % machine
-        self.assertEqual(se.get_tbb_filename(cm.TBB_WANG_AND_GOLDBERG),
+        tbb_2_4_7A1 = "tor-browser-gnu-linux-%s-2.4.7-alpha-1-dev-en-US.tar.gz" \
+                      % machine
+        self.assertEqual(cm.get_tbb_filename(cm.TBB_WANG_AND_GOLDBERG),
                          tbb_2_4_7A1)
-        self.assertEqual(se.get_tbb_filename(cm.TBB_V_3_5),
+        self.assertEqual(cm.get_tbb_filename(cm.TBB_V_3_5),
                          "tor-browser-linux%s-3.5_en-US.tar.xz" % arch)
-        self.assertEqual(se.get_tbb_filename(cm.TBB_V_4_0_8),
+        self.assertEqual(cm.get_tbb_filename(cm.TBB_V_4_0_8),
                          "tor-browser-linux%s-4.0.8_en-US.tar.xz" % arch)
 
     def test_download_tbb_tarball(self):
@@ -54,10 +54,6 @@ class Test(unittest.TestCase):
         os.remove(sha_sum_path)
         rmtree(tbb_4_0_8_path.split(".tar")[0])
 
-    def test_get_recommended_tbb_version(self):
-        rec_ver = se.get_recommended_tbb_version()
-        self.assertGreaterEqual(rec_ver.split('.')[0], 4)
-
     def test_import_tbb_signing_keys(self):
         try:
             se.import_tbb_signing_keys()
@@ -70,8 +66,9 @@ class Test(unittest.TestCase):
     def test_verify_tbb_signature(self):
         GOOD_SIG = "tor-browser-linux64-4.0.99_en-US.tar.xz.sha256sums.txt.asc"
         BAD_SIG = "bad_sig_tor-browser-linux64-4.0.99_en-US.tar.xz.sha256sums.txt.asc"  # noqa
-        self.assertTrue(se.verify_tbb_sig(os.path.join(cm.TEST_FILES_DIR, GOOD_SIG)))  # noqa
-        self.assertFalse(se.verify_tbb_sig(os.path.join(cm.TEST_FILES_DIR, BAD_SIG)))  # noqa
+        self.assertTrue(se.verify_tbb_sig(join(cm.TEST_FILES_DIR, GOOD_SIG)))  # noqa
+        self.assertFalse(se.verify_tbb_sig(join(cm.TEST_FILES_DIR, BAD_SIG)))  # noqa
+
 
 if __name__ == "__main__":
     unittest.main()

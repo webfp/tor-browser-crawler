@@ -1,5 +1,4 @@
-import os
-import time
+from os.path import join
 from shutil import copyfile
 
 from scapy.all import *
@@ -41,7 +40,7 @@ class Visit(object):
         self.xvfb = xvfb
         self.init_visit_dir()
         self.pcap_path = os.path.join(
-                self.visit_dir, "{}.pcap".format(self.get_instance_name()))
+            self.visit_dir, "{}.pcap".format(self.get_instance_name()))
 
         if self.xvfb and not cm.running_in_CI:
             wl_log.info("Starting XVFBm %sX%s" % (cm.XVFB_W, cm.XVFB_H))
@@ -49,11 +48,9 @@ class Visit(object):
             self.vdisplay.start()
 
         # Create new instance of TorBrowser driver
-        self.tb_driver = TorBrowserDriver(
-                tbb_logfile_path=os.path.join(
-                        self.visit_dir, "logs", "firefox.log"),
-                tbb_version=tbb_version,
-                page_url=page_url)
+        TorBrowserDriver.add_exception(self.page_url)
+        self.tb_driver = TorBrowserDriver(tbb_path=cm.TBB_PATH,
+                                          tbb_logfile_path=join(self.visit_dir, "logs", "firefox.log"))
         self.sniffer = Sniffer()  # sniffer to capture the network traffic
 
     def init_visit_dir(self):
