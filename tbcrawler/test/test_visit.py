@@ -15,8 +15,8 @@ TEST_URL = "https://torproject.org"
 class VisitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tor_controller = TorController(cm.TORRC_WANG_AND_GOLDBERG,
-                                           cm.TBB_DEFAULT_VERSION)
+        cls.tor_controller = TorController(cm.TBB_PATH,
+                                           torrc_dict=cm.TORRC_WANG_AND_GOLDBERG)
         cls.tor_process = cls.tor_controller.launch_tor_service()
 
     def check_expected_visit_dirs_and_files(self, visit):
@@ -82,8 +82,8 @@ class VisitTest(unittest.TestCase):
         self.run_visit(visit)
         # A blank page for https://check.torproject.org/ amounts to ~4.8KB.
         # A real screen capture on the other hand, is ~57KB. If the capture
-        # is not blank it should be at least greater than 30KB.
-        self.assertGreater(os.path.getsize(self.screenshot_path), 30000)
+        # is not blank it should be at least greater than 20KB.
+        self.assertGreater(os.path.getsize(self.screenshot_path), 20000)
 
     def test_visit_multitab_exp(self):
         self.setup_crawl_dirs()
