@@ -1,117 +1,116 @@
-from os.path import abspath
 import argparse
 import traceback
-import logging
+from logging import INFO, DEBUG
+from os import stat
+from os.path import isfile
+from sys import maxsize, argv
+
 import common as cm
-import sys
-from log import wl_log
 import utils as ut
+from log import wl_log
 from tbcrawler.crawler import Crawler
 
 
-if __name__ == '__main__':
+def main():
     # Parse arguments
-    parser = argparse.ArgumentParser(description='Crawl a list of URLs \
-            in several batches.')
-    # list of urls to be crawled
-    parser.add_argument('-u', '--url-list', help='URL list file path')
-    parser.add_argument('-b', '--browser-version', help="Tor browser's version"
-                        "used to crawl, possible values are: "
-                        "'wang_and_goldberg' (%s) or 'last_stable' "
-                        "(default: last_stable (%s))"
-                        % (cm.TBB_WANG_AND_GOLDBERG, cm.TBB_DEFAULT_VERSION),
-                        default=cm.TBB_DEFAULT_VERSION)
-    parser.add_argument('-v', '--verbose', help='increase output verbosity',
-                        action='store_true')
-    parser.add_argument("-e", "--experiment", help="Experiment type. Possible"
-                        " values are: 'wang_and_goldberg', 'multitab_alexa'")
+    args = parse_arguments()
 
-    # For understanding batch and instance parameters please refer to Wang and
-    # Goldberg WPES'13 paper, Section 4.1.4
-    parser.add_argument('--batch', help='Number of batches (default: %s)'
-                        % cm.NUM_BATCHES, default=cm.NUM_BATCHES)
-    parser.add_argument('--instance', help='Number of instances (default: %s)'
-                        % cm.NUM_INSTANCES, default=cm.NUM_INSTANCES)
+    # Read URLs
+    url_list = read_list_urls(args)
 
-    parser.add_argument('--start', help='Crawl URLs after this line (1)')
-    parser.add_argument('--stop', help='Crawl URLs until this line')
-    parser.add_argument('--action', help='Type of action: crawl, pack_data')
-    parser.add_argument('-i', '--input', help='Input data (crawl dir, etc. )')
-    parser.add_argument('-o', '--output',
-                        help='Directory to dump results (default=./results).',
-                        default=cm.RESULTS_DIR)
-    parser.add_argument('-x', '--xvfb', help='Use XVFB (for headless testing)',
-                        action='store_true', default=False)
-    parser.add_argument('-c', '--capture-screen',
-                        help='Capture page screenshots',
-                        action='store_true', default=False)
+    # Get torrc matching experiment type
+    torrc_dict = cm.TORRC_BY_TYPE[args.experiment]
 
-    args = parser.parse_args()
-    action = args.action
-    if action == "pack_data":
-        path = args.input
-        ut.pack_crawl_data(path)
-        sys.exit(0)
-
-    url_list_path = args.url_list
-    verbose = args.verbose
-    tbb_version = args.browser_version
-    experiment = args.experiment
-    no_of_batches = int(args.batch)
-    no_of_instances = int(args.instance)
-    start_line = int(args.start) if args.start else 1
-    stop_line = int(args.stop) if args.stop else 999999999999
-    xvfb = args.xvfb
-    capture_screen = args.capture_screen
-    if verbose:
-        wl_log.setLevel(logging.DEBUG)
-    else:
-        wl_log.setLevel(logging.INFO)
-
-    # Validate the given arguments
-    # Read urls
-    url_list = []
-    import os
-    if not url_list_path or not os.path.isfile(url_list_path):
-        ut.die("ERROR: No URL list given!"
-               "Run the following to get help: python main --help")
-    else:
-        try:
-            with open(url_list_path) as f:
-                url_list = f.read().splitlines()[start_line - 1:stop_line]
-        except Exception as e:
-            ut.die("Error opening file: {} \n{}"
-                   .format(e, traceback.format_exc()))
-
-    if experiment == cm.EXP_TYPE_WANG_AND_GOLDBERG:
-        torrc_dict = cm.TORRC_WANG_AND_GOLDBERG
-    elif experiment == cm.EXP_TYPE_MULTITAB_ALEXA:
-        torrc_dict = cm.TORRC_DEFAULT
-    else:
-        ut.die("Experiment type is not recognized."
-               " Use --help to see the possible values.")
-
-    if not tbb_version:
-        # Assign the last stable version of TBB
-        tbb_version = cm.TBB_DEFAULT_VERSION
-    elif tbb_version not in cm.TBB_KNOWN_VERSIONS:
-        ut.die("Version of Tor browser is not recognized."
-               " Use --help to see which are the accepted values.")
-
-    output = abspath(args.output)
-
-    crawler = Crawler(torrc_dict, url_list, tbb_version,
-                      experiment, xvfb, capture_screen, output)
-    wl_log.info("Command line parameters: %s" % sys.argv)
+    # Instantiate crawler
+    crawler = Crawler(url_list, torrc_dict,
+                      output=args.output,
+                      experiment=args.experiment,
+                      xvfb=args.xvfb,
+                      capture_screen=True)
 
     # Run the crawl
     try:
-        crawler.crawl(no_of_batches, no_of_instances,
-                      start_line=start_line - 1)
+        crawler.crawl(args.batches, args.instances,
+                      start_line=args.start_line - 1)
     except KeyboardInterrupt:
         wl_log.warning("Keyboard interrupt! Quitting...")
     except Exception as e:
-        wl_log.error("Exception: \n%s"
-                     % (traceback.format_exc()))
+        wl_log.error("Exception: \n%s" % (traceback.format_exc()))
     finally:
         crawler.stop_crawl()
+
+
+def read_list_urls(file_path):
+    """Return list of urls from a file."""
+    assert (isfile(file_path.url_list_path))  # check that file exists
+    assert (not stat(file_path.url_list_path).st_size == 0)  # check that file is not empty
+    url_list = []
+    try:
+        with open(file_path.url_list_path) as f:
+            file_contents = f.read()
+            url_list = file_contents.splitlines()
+            url_list = url_list[file_path.start_line - 1:file_path.stop_line]
+    except Exception as e:
+        ut.die("ERROR: while parsing URL list: {} \n{}".format(e, traceback.format_exc()))
+    return url_list
+
+
+def parse_arguments():
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Crawl a list of URLs in multiple batches.')
+
+    # List of urls to be crawled
+    parser.add_argument('-u', '--url-list', required=True,
+                        help='Path to the fail that contains the list of URLs to crawl.')
+    parser.add_argument('-o', '--output',
+                        help='Directory to dump the results (default=./results).',
+                        default=cm.RESULTS_DIR)
+    parser.add_argument('-b', '--tbb-path',
+                        help="Path to the Tor Browser Bundle directory.",
+                        default=cm.TBB_PATH)
+    parser.add_argument("-e", "--experiment", choices=cm.EXP_TYPES,
+                        help="Specifies the crawling methodology.",
+                        default=cm.EXP_TYPE_WANG_AND_GOLDBERG)
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='increase output verbosity',
+                        default=False)
+
+    # For understanding batch and instance parameters please refer
+    # to Wang and Goldberg's WPES'13 paper, Section 4.1.4
+    parser.add_argument('--batches', type=int,
+                        help='Number of batches in the crawl (default: %s)' % cm.NUM_BATCHES,
+                        default=cm.NUM_BATCHES)
+    parser.add_argument('--instances', type=int,
+                        help='Number of instances to crawl for each web page (default: %s)' % cm.NUM_INSTANCES,
+                        default=cm.NUM_INSTANCES)
+
+    # Crawler features
+    parser.add_argument('-x', '--xvfb', action='store_true',
+                        help='Use XVFB (for headless testing)',
+                        default=False)
+    parser.add_argument('-c', '--capture-screen', action='store_true',
+                        help='Capture page screenshots',
+                        default=False)
+
+    # Limit crawl
+    parser.add_argument('--start', type=int,
+                        help='Start crawling URLs from this line number: (default: 1).',
+                        default=1)
+    parser.add_argument('--stop', type=int,
+                        help='Stop crawling URLs after this line number: (default: EOF).',
+                        default=maxsize)
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Set verbose level
+    wl_log.setLevel(DEBUG if args.verbose else INFO)
+    del args.verbose
+
+    wl_log.debug("Command line parameters: %s" % argv)
+
+    return args
+
+
+if __name__ == '__main__':
+    main()

@@ -1,7 +1,9 @@
+from os.path import abspath
+
 from log import wl_log, add_log_file_handler, add_symlink
 from random import choice
 from selenium.common.exceptions import TimeoutException
-from tbselenium.torcontroller import TorController
+from torcontroller import TorController
 from visit import Visit
 import common as cm
 import os
@@ -12,20 +14,20 @@ import utils as ut
 class Crawler(object):
     """Provides methods to collect traffic traces."""
 
-    def __init__(self, torrc_dict, url_list, tbb_version,
+    def __init__(self, url_list, torrc_dict,
                  experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
                  capture_screen=True, output=cm.RESULTS_DIR):
         # Create instance of Tor controller and sniffer used for the crawler
         self.crawl_dir = None
         self.crawl_logs_dir = None
         self.visit = None
-        self.output = output
+        self.output = abspath(output)
         self.urls = url_list  # keep list of urls we'll visit
         self.init_crawl_dirs()  # initializes crawl_dir
         self.tor_log = os.path.join(self.crawl_logs_dir, "tor.log")
         linkname = os.path.join(self.output, 'latest_tor_log')
         add_symlink(linkname, self.tor_log)
-        self.tbb_version = tbb_version
+        self.tbb_version = cm.RECOMMENDED_TBB_VERSION
         self.experiment = experiment
         self.tor_controller = TorController(tbb_path=cm.TBB_PATH,
                                             torrc_dict=torrc_dict,
@@ -80,12 +82,8 @@ class Crawler(object):
                                 (instance_num, page_url))
                     self.visit = None
                     try:
-                        self.visit = Visit(batch_num, site_num,
-                                           instance_num, page_url,
-                                           site_dir, self.tbb_version,
-                                           self.tor_controller, bg_site,
-                                           self.experiment, self.xvfb,
-                                           self.capture_screen)
+                        self.visit = Visit(batch_num, site_num, instance_num, page_url, site_dir, self.tor_controller,
+                                           bg_site, self.experiment, self.xvfb, self.capture_screen)
 
                         self.visit.get()
                     except KeyboardInterrupt:  # CTRL + C

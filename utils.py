@@ -1,14 +1,16 @@
-import os
-import sys
-import signal
-import re
 import commands
-from time import strftime
 import distutils.dir_util as du
-from log import wl_log
-import psutil
-from urllib2 import urlopen
+import os
+import re
+import signal
+import sys
 from hashlib import sha256
+from time import strftime
+from urllib2 import urlopen
+
+import psutil
+
+from log import wl_log
 
 
 class TimeExceededError(Exception):
@@ -145,12 +147,12 @@ def gen_read_lines(path):
 
 def read_url(uri):
     """Fetch and return a URI content."""
-    try:    
+    try:
         w = urlopen(uri)
         return w.read()
     except Exception as e:
         print "Error opening: {}".format(uri)
-	print e
+        print e
 
 
 def write_to_file(file_path, data):

@@ -94,10 +94,6 @@ TBB_BASE_DIR = join(BASE_DIR, 'tbb')
 # Top URLs localized (DE) to prevent the effect of localization
 LOCALIZED_DATASET = join(ETC_DIR, "localized-urls-100-top.csv")
 
-# Experiment type determines what to do during the visits
-EXP_TYPE_WANG_AND_GOLDBERG = "wang_and_goldberg"  # setting from WPES'13 paper
-EXP_TYPE_MULTITAB_ALEXA = "multitab_alexa"  # open Alexa sites in multiple tabs
-
 # Tor ports
 SOCKS_PORT = 9050
 CONTROLLER_PORT = 9051
@@ -117,6 +113,13 @@ TORRC_WANG_AND_GOLDBERG = {'SocksPort': str(SOCKS_PORT),
                            'MaxCircuitDirtiness': '600000',
                            'UseEntryGuards': '0'
                            }
+
+# Experiment type determines what to do during the visits
+EXP_TYPE_WANG_AND_GOLDBERG = "wang_and_goldberg"  # setting from WPES'13 paper
+EXP_TYPE_MULTITAB_ALEXA = "multitab_alexa"  # open Alexa sites in multiple tabs
+EXP_TYPES = [EXP_TYPE_MULTITAB_ALEXA, EXP_TYPE_WANG_AND_GOLDBERG]
+TORRC_BY_TYPE = {EXP_TYPE_MULTITAB_ALEXA: TORRC_DEFAULT,
+                 EXP_TYPE_WANG_AND_GOLDBERG: TORRC_WANG_AND_GOLDBERG}
 
 # Directory structure and paths depend on TBB versions
 # Path to Firefox binary in TBB dir

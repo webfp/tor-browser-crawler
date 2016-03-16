@@ -21,10 +21,8 @@ LOCALHOST_IP = "127.0.0.1"  # default localhost IP
 class Visit(object):
     """Hold info about a particular visit to a page."""
 
-    def __init__(self, batch_num, site_num, instance_num, page_url,
-                 base_dir, tbb_version, tor_controller, bg_site=None,
-                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
-                 capture_screen=True):
+    def __init__(self, batch_num, site_num, instance_num, page_url, base_dir, tor_controller, bg_site=None,
+                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False, capture_screen=True):
         self.batch_num = batch_num
         self.site_num = site_num
         self.instance_num = instance_num
@@ -34,7 +32,7 @@ class Visit(object):
         self.base_dir = base_dir
         self.visit_dir = None
         self.visit_log_dir = None
-        self.tbb_version = tbb_version
+        self.tbb_version = cm.RECOMMENDED_TBB_VERSION
         self.capture_screen = capture_screen
         self.tor_controller = tor_controller
         self.xvfb = xvfb

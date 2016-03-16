@@ -54,30 +54,20 @@ class VisitTest(unittest.TestCase):
 
     def test_visit_with_defaults(self):
         self.setup_crawl_dirs()
-        visit = vi.Visit(self.batch_num, self.site_num,
-                         self.instance_num, TEST_URL,
-                         self.site_dir, cm.TBB_DEFAULT_VERSION,
-                         self.tor_controller)
+        visit = vi.Visit(self.batch_num, self.site_num, self.instance_num, TEST_URL, self.site_dir, self.tor_controller)
         self.run_visit(visit)
 
     def test_visit_noxvfb(self):
         self.setup_crawl_dirs()
-        visit = vi.Visit(self.batch_num, self.site_num,
-                         self.instance_num, TEST_URL,
-                         self.site_dir, cm.TBB_DEFAULT_VERSION,
-                         self.tor_controller, bg_site=None,
-                         experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
-                         capture_screen=True)
+        visit = vi.Visit(self.batch_num, self.site_num, self.instance_num, TEST_URL, self.site_dir, self.tor_controller,
+                         bg_site=None, experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False, capture_screen=True)
         self.run_visit(visit)
 
     def test_screen_capture(self):
         cap_test_url = "https://check.torproject.org/"
         self.setup_crawl_dirs(cap_test_url)
-        visit = vi.Visit(self.batch_num, self.site_num,
-                         self.instance_num, cap_test_url,
-                         self.site_dir, cm.TBB_DEFAULT_VERSION,
-                         self.tor_controller, bg_site=None,
-                         experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
+        visit = vi.Visit(self.batch_num, self.site_num, self.instance_num, cap_test_url, self.site_dir,
+                         self.tor_controller, bg_site=None, experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
                          capture_screen=True)
         self.run_visit(visit)
         # A blank page for https://check.torproject.org/ amounts to ~4.8KB.
@@ -87,11 +77,8 @@ class VisitTest(unittest.TestCase):
 
     def test_visit_multitab_exp(self):
         self.setup_crawl_dirs()
-        visit = vi.Visit(self.batch_num, self.site_num,
-                         self.instance_num, TEST_URL,
-                         self.site_dir, cm.TBB_DEFAULT_VERSION,
-                         self.tor_controller, bg_site="https://google.com",
-                         experiment=cm.EXP_TYPE_MULTITAB_ALEXA, xvfb=False,
+        visit = vi.Visit(self.batch_num, self.site_num, self.instance_num, TEST_URL, self.site_dir, self.tor_controller,
+                         bg_site="https://google.com", experiment=cm.EXP_TYPE_MULTITAB_ALEXA, xvfb=False,
                          capture_screen=True)
         self.run_visit(visit)
 
