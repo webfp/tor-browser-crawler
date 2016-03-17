@@ -6,4 +6,4 @@ pcapy
 xvfbwrapper
 selenium>=2.45.0
 tld
--e git+https://github.com/gunesacar/tor-browser-selenium.git#egg=tbselenium-1.0
+-e git+https://github.com/webfp/tor-browser-selenium.git#egg=tbselenium-1.0
