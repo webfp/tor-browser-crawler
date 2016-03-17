@@ -105,14 +105,14 @@ def extract_tarfile(file_path):
 
 def is_signature_valid(sig_file):
     """Verify the signature of a file."""
-    ret_code = Popen(['/usr/bin/gpg', '--verify', sig_file]).wait()
+    ret_code = Popen(['gpg', '--verify', sig_file]).wait()
     return True if ret_code == 0 else False
 
 
 def is_checksum_correct(tbb_filename):
     # get SHA256 hash
     tarball_path = join(TBB_BASE_DIR, tbb_filename)
-    with open(tarball_path, 'rU') as f:
+    with open(tarball_path, 'rb') as f:
         contents = f.read()
         sha256_sum = sha256(contents).hexdigest()
 
@@ -131,7 +131,7 @@ def is_checksum_correct(tbb_filename):
 def import_gpg_key(key_fp):
     """Import GPG key with the given fingerprint."""
     # https://www.torproject.org/docs/verifying-signatures.html.en
-    ret_code = Popen(['/usr/bin/gpg', '--keyserver',
+    ret_code = Popen(['gpg', '--keyserver',
                       'x-hkp://pool.sks-keyservers.net',
                       '--recv-keys', key_fp]).wait()
 
