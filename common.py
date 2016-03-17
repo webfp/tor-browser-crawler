@@ -86,6 +86,7 @@ TBB_TEST_TARBALL_EXTRACTED = join(TEST_FILES_DIR,
                                   'tor-browser-linux64-4.0.99_en-US')
 RESULTS_DIR = join(BASE_DIR, 'results')
 ETC_DIR = join(BASE_DIR, 'etc')
+TBB_VERSION_FILE = join(ETC_DIR, 'release.xml')
 PERMISSIONS_DB = join(ETC_DIR, 'permissions.sqlite')
 HOME_PATH = expanduser('~')
 TBB_BASE_DIR = join(BASE_DIR, 'tbb')
