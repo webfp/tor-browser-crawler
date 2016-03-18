@@ -6,16 +6,19 @@ from selenium.webdriver.common.keys import Keys
 from tbselenium.tbdriver import TorBrowserDriver
 from xvfbwrapper import Xvfb
 
-import common as cm
-import utils as ut
+import tbcrawler.common as cm
 from dumputils import Sniffer
-from log import wl_log
+from tbcrawler import utils as ut
+from tbcrawler.log import wl_log
 
 BAREBONE_HOME_PAGE = "file://%s/barebones.html" % cm.ETC_DIR
 
-VBOX_GATEWAY_IP = "10.0.2.2"  # default gateway IP of VirtualBox
-LXC_GATEWAY_IP = "10.0.3.1"  # default gateway IP of LXC
-LOCALHOST_IP = "127.0.0.1"  # default localhost IP
+
+
+class VisitBase(object):
+
+    def __init__(self, batch, site, instance, url):
+
 
 
 class Visit(object):

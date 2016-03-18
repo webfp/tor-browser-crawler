@@ -1,9 +1,10 @@
-import subprocess
-from log import wl_log
 import os
-import common as cm
-import utils as ut
+import subprocess
 import time
+
+import tbcrawler.common as cm
+from tbcrawler import utils as ut
+from tbcrawler.log import wl_log
 
 DUMPCAP_START_TIMEOUT = 10.0
 
@@ -11,9 +12,9 @@ DUMPCAP_START_TIMEOUT = 10.0
 class Sniffer(object):
     """Capture network traffic using dumpcap."""
 
-    def __init__(self):
-        self.pcap_file = '/dev/null'  # uggh, make sure we set a path
-        self.pcap_filter = ''
+    def __init__(self, pcap_path="/dev/null", pcap_filter=""):
+        self.pcap_file = pcap_path
+        self.pcap_filter = pcap_filter
         self.p0 = None
         self.is_recording = False
 
@@ -39,7 +40,6 @@ class Sniffer(object):
             return False
         if pcap_filter:
             self.set_capture_filter(pcap_filter)
-
         if pcap_path:
             self.set_pcap_path(pcap_path)
         prefix = ""
@@ -80,3 +80,10 @@ class Sniffer(object):
         else:
             wl_log.warning('Dumpcap killed but cannot find capture file: %s'
                            % self.pcap_file)
+
+    def __enter__(self):
+        self.start_capture()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.stop_capture()

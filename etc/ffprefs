@@ -1,0 +1,3 @@
+# Firefox preferences
+browser.startup.page 0
+browser.startup.homepage about:newtab

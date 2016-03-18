@@ -1,13 +1,13 @@
 import os
-from os.path import join
 import shutil
 import unittest
+from os.path import join
 
 from tbselenium.torcontroller import TorController
 
-import common as cm
+import tbcrawler.common as cm
 import tbcrawler.visit as vi
-import utils as ut
+from tbcrawler import utils as ut
 
 TEST_URL = "https://torproject.org"
 

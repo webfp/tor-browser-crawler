@@ -1,133 +1,77 @@
-from os.path import abspath
+from os.path import join
+from time import sleep
 
-from log import wl_log, add_log_file_handler, add_symlink
-from random import choice
 from selenium.common.exceptions import TimeoutException
+from tbselenium.tbdriver import TorBrowserDriver
+
+import tbcrawler.common as cm
+from tbcrawler import utils as ut
+from tbcrawler.dumputils import Sniffer
+from tbcrawler.log import wl_log, add_log_file_handler, add_symlink
 from torcontroller import TorController
-from visit import Visit
-import common as cm
-import os
-import time
-import utils as ut
 
 
-class Crawler(object):
-    """Provides methods to collect traffic traces."""
+class CrawlerBase(object):
+    def __init__(self, output, torrc_dict, virt_display=False, capture=True):
+        self.output = output
+        self.torrc_dict = torrc_dict
+        self.virt_display = virt_display
+        self.capture = capture
 
-    def __init__(self, url_list, torrc_dict,
-                 experiment=cm.EXP_TYPE_WANG_AND_GOLDBERG, xvfb=False,
-                 capture_screen=True, output=cm.RESULTS_DIR):
-        # Create instance of Tor controller and sniffer used for the crawler
-        self.crawl_dir = None
-        self.crawl_logs_dir = None
-        self.visit = None
-        self.output = abspath(output)
-        self.urls = url_list  # keep list of urls we'll visit
-        self.init_crawl_dirs()  # initializes crawl_dir
-        self.tor_log = os.path.join(self.crawl_logs_dir, "tor.log")
-        linkname = os.path.join(self.output, 'latest_tor_log')
-        add_symlink(linkname, self.tor_log)
-        self.tbb_version = cm.RECOMMENDED_TBB_VERSION
-        self.experiment = experiment
-        self.tor_controller = TorController(tbb_path=cm.TBB_PATH,
-                                            torrc_dict=torrc_dict,
-                                            tor_log=self.tor_log)
-        self.tor_process = None
-        self.tb_driver = None
-        self.capture_screen = capture_screen
-        self.xvfb = xvfb
-        add_log_file_handler(wl_log, self.log_file)
-        linkname = os.path.join(self.output, 'latest_crawl_log')
-        add_symlink(linkname, self.log_file)  # add a symbolic link
+    def post_crawl(self):
+        pass
 
-    def crawl(self, num_batches=cm.NUM_BATCHES,
-              num_instances=cm.NUM_INSTANCES, start_line=0):
-        wl_log.info("Crawl configuration: batches: %s, instances: %s,"
-                    " tbb_version: %s, experiment: %s, no of URLs: %s, "
-                    "crawl dir: %s, XVFB: %s, screenshot: %s"
-                    % (num_batches, num_instances, self.tbb_version,
-                       self.experiment, len(self.urls), self.crawl_dir,
-                       self.xvfb, self.capture_screen))
+    def crawl(self, urls, batches, instances):
+        wl_log.info("Crawl configuration:\n"
+                    "\tpath: %s,\n"
+                    "\tbatches: %s,\n"
+                    "\tinstances: %s,\n"
+                    "\tsites: %s"
+                    % (cm.CRAWL_DIR, batches, instances, len(urls)))
+
         # for each batch
-        for batch_num in xrange(num_batches):
-            wl_log.info("********** Starting batch %s **********" % batch_num)
-            site_num = start_line
-            bg_site = None
-            batch_dir = ut.create_dir(os.path.join(self.crawl_dir,
-                                                   str(batch_num)))
+        for batch in xrange(batches):
+            wl_log.info("********** Starting batch %s **********" % batch)
+            batch_dir = ut.create_dir(join(cm.CRAWL_DIR, str(batch)))
             # init/reset tor process to have a different circuit.
             # make sure that we're not using the same guard node again
-            wl_log.info("********** Restarting Tor Before Batch **********")
-            self.tor_controller.restart_tor()
-            sites_crawled_with_same_proc = 0
+            wl_log.info("Restarting Tor before batch starts.")
 
-            # for each site
-            for page_url in self.urls:
-                sites_crawled_with_same_proc += 1
-                if sites_crawled_with_same_proc > cm.MAX_SITES_PER_TOR_PROCESS:
-                    wl_log.info("********** Restarting Tor Process **********")
-                    self.tor_controller.restart_tor()
-                    sites_crawled_with_same_proc = 0
+            with TorController(cm.TBB_DEFAULT_DIR,
+                               torrc_dict=self.torrc_dict,
+                               pollute=False) as tor_controller:
 
-                wl_log.info("********** Crawling %s **********" % page_url)
-                page_url = page_url[:cm.MAX_FNAME_LENGTH]
-                site_dir = ut.create_dir(os.path.join(
-                    batch_dir, ut.get_filename_from_url(page_url, site_num)))
+                # for each site
+                for i, url in enumerate(urls):
+                    if len(url) > cm.MAX_FNAME_LENGTH:
+                        wl_log.warning("Skipping URL because it's too long: %s" % url)
+                        continue
+                    site_dir = ut.create_dir(join(batch_dir, ut.get_filename_from_url(url, i)))
 
-                if self.experiment == cm.EXP_TYPE_MULTITAB_ALEXA:
-                    bg_site = choice(self.urls)
-                # for each visit
-                for instance_num in range(num_instances):
-                    wl_log.info("********** Visit #%s to %s **********" %
-                                (instance_num, page_url))
-                    self.visit = None
-                    try:
-                        self.visit = Visit(batch_num, site_num, instance_num, page_url, site_dir, self.tor_controller,
-                                           bg_site, self.experiment, self.xvfb, self.capture_screen)
+                    # for each instance
+                    for instance in xrange(instances):
+                        inst_dir = ut.create_dir(join(site_dir, str(instance)))
+                        wl_log.info("********** Visit #%s to %s **********" % (instance, url))
 
-                        self.visit.get()
-                    except KeyboardInterrupt:  # CTRL + C
-                        raise KeyboardInterrupt
-                    except (ut.TimeExceededError, TimeoutException) as exc:
-                        wl_log.critical("Visit to %s timed out! %s %s" %
-                                        (page_url, exc, type(exc)))
-                        if self.visit:
-                            self.visit.cleanup_visit()
-                    except Exception:
-                        wl_log.critical("Exception crawling %s" % page_url,
-                                        exc_info=True)
-                        if self.visit:
-                            self.visit.cleanup_visit()
-                # END - for each visit
-                site_num += 1
-                time.sleep(cm.PAUSE_BETWEEN_SITES)
+                        with TorBrowserDriver(cm.TBB_DEFAULT_DIR,
+                                              socks_port=tor_controller.socks_port,
+                                              pref_dict=cm.FFPREFS,
+                                              virt_display=self.virt_display,
+                                              pollute=False) as tb_driver:
+                            inst_fname = "_".join(map(str, [instance, i, batch]))
+                            pcap_file = join(inst_dir, inst_fname + '.pcap')
 
-    def init_crawl_dirs(self):
-        """Creates results and logs directories for this crawl."""
-        self.crawl_dir, self.crawl_logs_dir = self.create_crawl_dir()
-        sym_link = os.path.join(self.output, 'latest')
-        add_symlink(sym_link, self.crawl_dir)  # add a symbolic link
-        # Create crawl log
-        self.log_file = os.path.join(self.crawl_logs_dir, "crawl.log")
-
-    def init_logger(self):
-        """Configure logging for crawler."""
-        add_log_file_handler(wl_log, self.log_file)
-
-    def stop_crawl(self, pack_results=True):
-        """ Cleans up crawl and kills tor process in case it's running."""
-        wl_log.info("Stopping crawl...")
-        if self.visit:
-            self.visit.cleanup_visit()
-        self.tor_controller.kill_tor_proc()
-        if pack_results:
-            ut.pack_crawl_data(self.crawl_dir)
-
-    def create_crawl_dir(self):
-        """Create a timestamped crawl."""
-        ut.create_dir(self.output)  # ensure that we've a results dir
-        crawl_dir_wo_ts = os.path.join(self.output, 'crawl')
-        crawl_dir = ut.create_dir(ut.append_timestamp(crawl_dir_wo_ts))
-        crawl_logs_dir = os.path.join(crawl_dir, 'logs')
-        ut.create_dir(crawl_logs_dir)
-        return crawl_dir, crawl_logs_dir
+                            with Sniffer(pcap_path=pcap_file, pcap_filter=cm.DEFAULT_FILTER) as sniffer:
+                                try:
+                                    ut.timeout(cm.HARD_VISIT_TIMEOUT)  # set timeout to stop the visit
+                                    tb_driver.get(url)
+                                    sleep(cm.PAUSE_BETWEEN_SITES)
+                                    if self.capture:
+                                        png_file = join(inst_dir, inst_fname + '.png')
+                                        tb_driver.get_screenshot_as_png(png_file)
+                                except (ut.TimeExceededError, TimeoutException) as exc:
+                                    wl_log.critical("Visit to %s timed out! %s %s" %
+                                                    (url, exc, type(exc)))
+                                finally:
+                                    ut.cancel_timeout()
+                                    self.post_crawl()

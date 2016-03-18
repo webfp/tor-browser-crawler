@@ -1,55 +1,65 @@
 import argparse
+import sys
 import traceback
 from logging import INFO, DEBUG
 from os import stat
-from os.path import isfile
+from os.path import isfile, join
+from shutil import copyfile
 from sys import maxsize, argv
 
-import common as cm
-import utils as ut
-from log import wl_log
-from tbcrawler.crawler import Crawler
+from tbselenium.tbdriver import TorBrowserDriver
+
+import tbcrawler.common as cm
+from tbcrawler import utils as ut
+from tbcrawler.crawler import CrawlerBase
+from tbcrawler.log import wl_log, add_symlink
 
 
-def main():
+def run():
+    # build dirs
+    build_crawl_dirs()
+
     # Parse arguments
     args = parse_arguments()
 
     # Read URLs
-    url_list = read_list_urls(args)
+    url_list = read_list_urls(args.url_file, args.start, args.stop)
 
-    # Get torrc matching experiment type
-    torrc_dict = cm.TORRC_BY_TYPE[args.experiment]
+    # Add exceptions for all urls:
+    for url in url_list:
+        TorBrowserDriver.add_exception(url)
 
     # Instantiate crawler
-    crawler = Crawler(url_list, torrc_dict,
-                      output=args.output,
-                      experiment=args.experiment,
-                      xvfb=args.xvfb,
-                      capture_screen=True)
+    crawler = CrawlerBase(cm.CRAWL_DIR, cm.TORRC,
+                          args.virtual_display, args.capture_screen)
 
     # Run the crawl
     try:
-        crawler.crawl(args.batches, args.instances,
-                      start_line=args.start_line - 1)
+        crawler.crawl(url_list, args.batches, args.instances)
     except KeyboardInterrupt:
         wl_log.warning("Keyboard interrupt! Quitting...")
-    except Exception as e:
-        wl_log.error("Exception: \n%s" % (traceback.format_exc()))
-    finally:
-        crawler.stop_crawl()
+        sys.exit(-1)
 
 
-def read_list_urls(file_path):
+def build_crawl_dirs():
+    # build crawl directory
+    ut.create_dir(cm.CRAWL_DIR)
+    ut.create_dir(cm.LOGS_DIR)
+    copyfile(cm.TORRC_FILE, join(cm.LOGS_DIR, 'torrc'))
+    copyfile(cm.FFPREF_FILE, join(cm.LOGS_DIR, 'ffprefs'))
+    add_symlink(join(cm.RESULTS_DIR, 'latest_crawl'), cm.CRAWL_DIR)
+
+
+def read_list_urls(file_path, start, stop):
     """Return list of urls from a file."""
-    assert (isfile(file_path.url_list_path))  # check that file exists
-    assert (not stat(file_path.url_list_path).st_size == 0)  # check that file is not empty
+    assert (isfile(file_path))  # check that file exists
+    assert (not stat(file_path).st_size == 0)  # check that file is not empty
     url_list = []
     try:
-        with open(file_path.url_list_path) as f:
+        with open(file_path) as f:
             file_contents = f.read()
             url_list = file_contents.splitlines()
-            url_list = url_list[file_path.start_line - 1:file_path.stop_line]
+            url_list = url_list[start - 1:stop]
     except Exception as e:
         ut.die("ERROR: while parsing URL list: {} \n{}".format(e, traceback.format_exc()))
     return url_list
@@ -60,17 +70,14 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Crawl a list of URLs in multiple batches.')
 
     # List of urls to be crawled
-    parser.add_argument('-u', '--url-list', required=True,
-                        help='Path to the fail that contains the list of URLs to crawl.')
+    parser.add_argument('-u', '--url-file', required=True,
+                        help='Path to the file that contains the list of URLs to crawl.')
     parser.add_argument('-o', '--output',
                         help='Directory to dump the results (default=./results).',
-                        default=cm.RESULTS_DIR)
+                        default=cm.CRAWL_DIR)
     parser.add_argument('-b', '--tbb-path',
                         help="Path to the Tor Browser Bundle directory.",
-                        default=cm.TBB_PATH)
-    parser.add_argument("-e", "--experiment", choices=cm.EXP_TYPES,
-                        help="Specifies the crawling methodology.",
-                        default=cm.EXP_TYPE_WANG_AND_GOLDBERG)
+                        default=cm.TBB_DEFAULT_DIR)
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='increase output verbosity',
                         default=False)
@@ -83,10 +90,9 @@ def parse_arguments():
     parser.add_argument('--instances', type=int,
                         help='Number of instances to crawl for each web page (default: %s)' % cm.NUM_INSTANCES,
                         default=cm.NUM_INSTANCES)
-
     # Crawler features
-    parser.add_argument('-x', '--xvfb', action='store_true',
-                        help='Use XVFB (for headless testing)',
+    parser.add_argument('-x', '--virtual-display', action='store_true',
+                        help='Use a virtual display (for headless browsing)',
                         default=False)
     parser.add_argument('-c', '--capture-screen', action='store_true',
                         help='Capture page screenshots',
@@ -94,10 +100,10 @@ def parse_arguments():
 
     # Limit crawl
     parser.add_argument('--start', type=int,
-                        help='Start crawling URLs from this line number: (default: 1).',
+                        help='Select URLs from this line number: (default: 1).',
                         default=1)
     parser.add_argument('--stop', type=int,
-                        help='Stop crawling URLs after this line number: (default: EOF).',
+                        help='Select URLs after this line number: (default: EOF).',
                         default=maxsize)
 
     # Parse arguments
@@ -107,10 +113,13 @@ def parse_arguments():
     wl_log.setLevel(DEBUG if args.verbose else INFO)
     del args.verbose
 
-    wl_log.debug("Command line parameters: %s" % argv)
+    # Change results dir if output
+    cm.CRAWL_DIR = args.output
+    del args.output
 
+    wl_log.debug("Command line parameters: %s" % argv)
     return args
 
 
 if __name__ == '__main__':
-    main()
+    run()

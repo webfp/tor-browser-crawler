@@ -2,8 +2,8 @@ import commands
 import os
 import unittest
 
-import common as cm
-from common import get_recommended_tbb_version
+from tbcrawler import common as cm
+from tbcrawler.common import get_recommended_tbb_version
 
 
 class Test(unittest.TestCase):

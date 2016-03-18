@@ -2,8 +2,8 @@ import os
 import unittest
 from os.path import join
 
-import common as cm
 import setup as se
+from tbcrawler import common as cm
 
 arch = cm.arch
 machine = cm.machine

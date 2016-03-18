@@ -1,11 +1,12 @@
+import commands as cmds
 import os
 import sys
 import unittest
 from time import sleep
-import commands as cmds
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-import utils as ut
-import common as cm
+from tbcrawler import utils as ut
+import tbcrawler.common as cm
 from shutil import rmtree
 from tld import get_tld
 

@@ -3,8 +3,8 @@ import unittest
 
 from tbselenium.tbdriver import TorBrowserDriver
 
-import common as cm
-from torcontroller import TorController
+from tbcrawler import common as cm
+from tbcrawler.torcontroller import TorController
 
 
 class RunDriverWithControllerTest(unittest.TestCase):

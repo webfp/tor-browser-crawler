@@ -1,11 +1,12 @@
 import os
 import sys
+import time
 import unittest
 from urllib2 import urlopen
-import time
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from tbcrawler.dumputils import Sniffer
-import common as cm
+from tbcrawler import common as cm
 
 TEST_CAP_FILTER = 'host 255.255.255.255'
 TEST_PCAP_PATH = os.path.join(cm.TEST_FILES_DIR, 'test.pcap')

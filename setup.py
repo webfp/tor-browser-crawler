@@ -1,108 +1,202 @@
-import os
-import subprocess
+#!/usr/bin/env python2
+import commands
+import platform
+import re
+import sys
+import urllib
+from genericpath import isfile
+from hashlib import sha256
+from os import mkdir, remove
+from os.path import dirname, abspath, join, isdir
+from subprocess import Popen
+from urllib2 import URLError
+from xml.etree import ElementTree
 
-import common as cm
-import utils as ut
-from common import get_tbb_filename, TBB_BASE_DIR, get_recommended_tbb_version
-from log import wl_log
-
-
-def get_tbb_base_url(tbb_ver):
-    archive_url = "https://archive.torproject.org/tor-package-archive/torbrowser/"  # noqa
-    if int(tbb_ver.split(".")[0]) <= 2:
-        base_url = "%slinux/" % (archive_url)
-    else:
-        base_url = "%s%s/" % (archive_url, tbb_ver)
-    return base_url
-
-
-def get_url_by_tbb_ver(tbb_ver):
-    base_url = get_tbb_base_url(tbb_ver)
-    tbb_tarball_url = "%s%s" % (base_url, get_tbb_filename(tbb_ver))
-    return tbb_tarball_url
-
-
-def download_tbb_tarball(tbb_ver, dl_dir=""):
-    tbb_url = get_url_by_tbb_ver(tbb_ver)
-    base_dir = dl_dir if dl_dir else cm.TBB_BASE_DIR
-    tarball_path = os.path.join(base_dir, get_tbb_filename(tbb_ver))
-    if not os.path.isfile(tarball_path):
-        wl_log.info("Will download %s to %s" % (tbb_url, tarball_path))
-        ut.download_file(tbb_url, tarball_path)
-        ut.extract_tbb_tarball(tarball_path)
-    if verify_tbb_tarball(tbb_ver, tarball_path, tbb_url):
-        return tarball_path
-    # we cannot verify the integrity of the downloaded tarball
-    raise cm.TBBTarballVerificationError("Cannot verify the integrity of %s"
-                                         % tarball_path)
+BASE_DIR = abspath(dirname(__file__))
+TBB_BASE_DIR = join(BASE_DIR, 'tbb')
+TBB_DIR = join(TBB_BASE_DIR, 'tor-browser_en-US')
+ETC_DIR = join(BASE_DIR, 'etc')
+RESULTS_DIR = join(BASE_DIR, 'results')
+TBB_VERSION_FILE = join(ETC_DIR, 'release.xml')
+TBB_VERSION_URL = "https://dist.torproject.org/torbrowser/update_2/release/Linux_x86_64-gcc3/x/en-US"
+TBB_ARCHIVE_URL = "https://archive.torproject.org/tor-package-archive/torbrowser/{0}/"
+TBB_DEVS_KEY_FP = '0x4E2C6E8793298290'
+CHECKSUM_FILE = "sha256sums-unsigned-build.txt"
+CHECKSUM_FILE_URL = TBB_ARCHIVE_URL + CHECKSUM_FILE
+CHECKSUM_FPATH = join(TBB_BASE_DIR, CHECKSUM_FILE)
 
 
-def verify_tbb_sig(sig_file):
+class IntegrityCheckError(Exception):
+    pass
+
+
+class ExtractionError(Exception):
+    pass
+
+
+class DownloadError(Exception):
+    pass
+
+
+def get_latest_tor():
+    """Download latest stable version and verify its signature."""
+    version = tbb_stable_version()
+    if version is None:
+        raise DownloadError("Cannot find latest TBB stable version.")
+
+    # download latest TBB
+    tbb_filename = get_tbb_filename(version)
+    tbb_path = join(TBB_BASE_DIR, tbb_filename)
+    tbb_url = TBB_ARCHIVE_URL.format(version) + tbb_filename
+    download_with_signature(tbb_url, TBB_BASE_DIR)
+    download_with_signature(CHECKSUM_FILE_URL.format(version), TBB_BASE_DIR)
+
+    # verify checksum
+    if not is_checksum_correct(tbb_filename):
+        raise IntegrityCheckError("Checksum of downloaded TBB is not correct!")
+
+    # verify signature of downloaded TBB
+    if not is_signature_valid(tbb_path + '.asc'):
+        raise IntegrityCheckError("Invalid signature of TBB file!")
+    return tbb_path
+
+
+def tbb_stable_version():
+    """Return version of the latest TBB stable.
+
+    Modified from: https://github.com/micahflee/torbrowser-launcher
+    """
+    urllib.urlretrieve(TBB_VERSION_URL, TBB_VERSION_FILE)
+    tree = ElementTree.parse(TBB_VERSION_FILE)
+    for up in tree.getroot():
+        if up.tag == 'update' and up.attrib['appVersion']:
+            version = str(up.attrib['appVersion'])
+            if not re.match(r'^[a-z0-9\.\-]+$', version):
+                return None
+            return version
+    return None
+
+
+def get_tbb_filename(version):
+    """Assume 'en-US' locale and new filename structure."""
+    arch = platform.architecture()[0][:-3]
+    return 'tor-browser-linux{0}-{1}_en-US.tar.xz'.format(arch, version)
+
+
+def download_with_signature(file_url, dir_path):
+    download(file_url, dir_path)
+    download(file_url + '.asc', dir_path)
+
+
+def download(file_url, dir_path):
+    """Download a file to a directory."""
+    fname = file_url.split("/")[-1]  # assumes no url params and others
+    fpath = join(dir_path, fname)
+    try:
+        urllib.urlretrieve(file_url, fpath)
+    except URLError, url_exc:
+        raise DownloadError("Error retrieving: %s to %s: %s"
+                            % (file_url, fpath, url_exc))
+
+
+def extract_tarfile(file_path):
+    """Extract a tarfile to the same directory."""
+    dir_path = dirname(file_path)
+    tar_cmd = "tar -xvf %s -C %s" % (file_path, dir_path)
+    status, txt = commands.getstatusoutput(tar_cmd)
+
+    if status or not isdir(TBB_DIR):
+        raise ExtractionError("Error extracting TBB tarball %s: (%s: %s)"
+                              % (tar_cmd, status, txt))
+
+
+def is_signature_valid(sig_file):
     """Verify the signature of a file."""
-    ret_code = subprocess.Popen(['/usr/bin/gpg', '--verify', sig_file]).wait()
+    if not isfile(sig_file):
+        raise OSError("Signature file %s not found." % sig_file)
+    ret_code = Popen(['gpg', '--verify', sig_file]).wait()
     return True if ret_code == 0 else False
 
 
-def verify_tbb_tarball(tbb_ver, tarball_path, tbb_url):
-    tarball_filename = get_tbb_filename(tbb_ver)
-    tarball_sha_sum = ut.sha_256_sum_file(tarball_path).lower()
-    sha256sums_fname = "sha256sums"
-    if tbb_ver.split(".")[0] == "5":
-	sha256sums_fname += "-unsigned-build"
-    sha256sums_fname += ".txt"
-    sha_sum_url = "%s%s" % (get_tbb_base_url(tbb_ver), sha256sums_fname)
-    sha_sum_path = "%s%s" % (tarball_path, ".sha256sums.txt")
-    sha_sum_sig_url = "%s%s" % (sha_sum_url, ".asc")
-    sha_sum_sig_path = "%s%s" % (sha_sum_path, ".asc")
-    if not os.path.isfile(sha_sum_path):
-        ut.download_file(sha_sum_url, sha_sum_path)
-    if not os.path.isfile(sha_sum_sig_path):
-        ut.download_file(sha_sum_sig_url, sha_sum_sig_path)
+def is_checksum_correct(tbb_filename):
+    # get SHA256 hash
+    tarball_path = join(TBB_BASE_DIR, tbb_filename)
+    with open(tarball_path, 'rb') as f:
+        contents = f.read()
+        sha256_sum = sha256(contents).hexdigest()
 
-    if not verify_tbb_sig(sha_sum_sig_path):
-        return False
+    # verify checksum file signature
+    if not is_signature_valid(CHECKSUM_FPATH + '.asc'):
+        raise IntegrityCheckError("Checksum file has not a valid signature.")
 
-    # https://github.com/micahflee/torbrowser-launcher/blob/3f1146e1a084c4e8021da968104cbc2877ae01e6/torbrowser_launcher/launcher.py#L560
-    for line in ut.gen_read_lines(sha_sum_path):
-        if tarball_sha_sum in line.lower() and tarball_filename in line:
-            return True
+    with open(CHECKSUM_FPATH, 'rU') as checksum_file:
+        for line in checksum_file:
+            if tbb_filename in line:
+                if sha256_sum.lower() in line.split()[0].lower():
+                    return True
     return False
 
 
 def import_gpg_key(key_fp):
     """Import GPG key with the given fingerprint."""
-    wl_log.info("Will import the GPG key %s" % key_fp)
     # https://www.torproject.org/docs/verifying-signatures.html.en
-    ret_code = subprocess.Popen(['/usr/bin/gpg', '--keyserver',
-                                 'x-hkp://pool.sks-keyservers.net',
-                                 '--recv-keys', key_fp]).wait()
-    return True if ret_code == 0 else False
+    ret_code = Popen(['gpg', '--keyserver',
+                      'x-hkp://pool.sks-keyservers.net',
+                      '--recv-keys', key_fp]).wait()
+
+    if ret_code != 0:
+        raise DownloadError("Cannot import signing key.")
 
 
-def import_tbb_signing_keys():
-    """Import signing GPG keys for TBB."""
-    tbb_devs_key = '0x4E2C6E8793298290'
-    if import_gpg_key(tbb_devs_key):
-        return True
-    else:
-        raise cm.TBBSigningKeyImportError("Cannot import TBB signing keys")
+def remove_tbb_file(file_path):
+    if isfile(file_path):
+        remove(file_path)
+    if isfile(file_path + '.asc'):
+        remove(file_path + '.asc')
 
 
-def setup_env(tbb_rec_ver=None):
-    """Initialize the tbb directory and import TBB signing keys.
+def build_dirs():
+    # prepare directory
+    if not isdir(TBB_BASE_DIR):
+        mkdir(TBB_BASE_DIR)
+    if not isdir(RESULTS_DIR):
+        mkdir(RESULTS_DIR)
+    if not isdir(ETC_DIR):
+        mkdir(ETC_DIR)
 
-    Download recommended TBB version and verify it.
-    """
-    import_tbb_signing_keys()
-    ut.create_dir(TBB_BASE_DIR)
-    if not tbb_rec_ver:
-        tbb_rec_ver = get_recommended_tbb_version()
-    download_tbb_tarball(tbb_rec_ver)
+
+def tbb_setup(clean=False):
+    # make dirs
+    build_dirs()
+
+    # import TBB devs gpg key
+    try:
+        import_gpg_key(TBB_DEVS_KEY_FP)
+    except DownloadError as dwn_err:
+        print("[gettor] - Error on download of files: %s" % dwn_err)
+        sys.exit(-1)
+
+    # get the latest Tor Browser Bundle
+    try:
+        tbb_path = get_latest_tor()
+    except IntegrityCheckError as int_err:
+        print("[gettor] - Error on integrity check: %s" % int_err)
+        sys.exit(-1)
+    except OSError, os_exc:
+        print("[gettor] - %s" % os_exc)
+
+    # extract tar.xz
+    try:
+        extract_tarfile(tbb_path)
+    except ExtractionError as ext_err:
+        print("[gettor] - Error when extracting tarball: %s" % ext_err)
+        sys.exit(-1)
+
+    # clean temp files
+    if clean:
+        remove_tbb_file(tbb_path)
+        remove_tbb_file(CHECKSUM_FPATH)
 
 
 if __name__ == '__main__':
-    import sys
-    version = None
-    if len(sys.argv) > 1:
-        version = sys.argv[1]
-    setup_env(version)
+    tbb_setup(clean=True)

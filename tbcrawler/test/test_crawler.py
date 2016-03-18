@@ -3,7 +3,7 @@ import shutil
 import unittest
 from os.path import isfile, isdir
 
-import common as cm
+from tbcrawler import common as cm
 from tbcrawler.crawler import Crawler
 
 TEST_URL_LIST = ['https://www.google.de',

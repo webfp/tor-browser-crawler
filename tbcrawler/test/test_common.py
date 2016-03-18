@@ -1,7 +1,7 @@
 import unittest
 from os.path import join
 
-import common as cm
+from tbcrawler import common as cm
 
 
 class CommonTest(unittest.TestCase):
