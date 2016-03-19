@@ -1,4 +1,5 @@
 import shutil
+from contextlib import contextmanager
 from os import environ
 from os.path import join, isfile, isdir, dirname
 
@@ -6,7 +7,6 @@ import stem.process
 from stem.control import Controller
 from stem.util import term
 from tbselenium.common import DEFAULT_TOR_DATA_PATH, DEFAULT_TOR_BINARY_PATH
-from tbselenium.utils import clone_dir_temporary
 
 import tbcrawler.common as cm
 from tbcrawler import utils as ut
@@ -66,7 +66,7 @@ class TorController(object):
         """Add the Tor Browser binary to the library path."""
         environ["LD_LIBRARY_PATH"] = dirname(self.tor_binary_path)
 
-    def kill_tor_proc(self):
+    def quit(self):
         """Kill Tor process."""
         if self.tor_process:
             print("Killing tor process")
@@ -97,21 +97,18 @@ class TorController(object):
         """Close all streams of a controller."""
         print("Closing all streams")
         try:
-            ut.timeout(cm.STREAM_CLOSE_TIMEOUT)
-            for stream in self.controller.get_streams():
-                print("Closing stream %s %s %s " %
-                      (stream.id, stream.purpose, stream.target_address))
-                self.controller.close_stream(stream.id)  # MISC reason
-        except ut.TimeExceededError:
+            with ut.timeout(cm.STREAM_CLOSE_TIMEOUT):
+                for stream in self.controller.get_streams():
+                    print("Closing stream %s %s %s " %
+                          (stream.id, stream.purpose, stream.target_address))
+                    self.controller.close_stream(stream.id)  # MISC reason
+        except ut.TimeoutException:
             print("Closing streams timed out!")
         except:
             print("Exception closing stream")
-        finally:
-            ut.cancel_timeout()
 
-    def __enter__(self):
+    @contextmanager
+    def launch(self):
         self.launch_tor_service()
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.kill_tor_proc()
+        yield self
+        self.quit()

@@ -10,9 +10,11 @@ from sys import maxsize, argv
 from tbselenium.tbdriver import TorBrowserDriver
 
 import tbcrawler.common as cm
+from log import add_log_file_handler
 from tbcrawler import utils as ut
-from tbcrawler.crawler import CrawlerBase
+from tbcrawler.crawler import CrawlJob
 from tbcrawler.log import wl_log, add_symlink
+from tbcrawler.torcontroller import TorController
 
 
 def run():
@@ -25,24 +27,46 @@ def run():
     # Read URLs
     url_list = read_list_urls(args.url_file, args.start, args.stop)
 
-    # Add exceptions for all urls:
-    for url in url_list:
-        TorBrowserDriver.add_exception(url)
+    # Configure logger
+    add_log_file_handler(wl_log, join(cm.LOGS_DIR, "crawl.log"))
+
+    # Configure browser
+    TorBrowserDriver.add_exceptions(url_list)
+    driver = ut.wrap(TorBrowserDriver)(cm.TBB_DEFAULT_DIR,
+                                       cm.FFPREFS, cm.TORRC)
+
+    # Configure controller
+    controller = TorController(cm.TBB_DEFAULT_DIR,
+                                        cm.TORRC)
 
     # Instantiate crawler
-    crawler = CrawlerBase(cm.CRAWL_DIR, cm.TORRC,
-                          args.virtual_display, args.capture_screen)
+    crawler = cm.CRAWLER_TYPES[args.type](driver, controller, args.screenshots)
+
+    # Configure crawl
+    job = CrawlJob(args.batches, url_list, args.instances)
 
     # Run the crawl
     try:
-        crawler.crawl(url_list, args.batches, args.instances)
+        crawler.crawl(job)
     except KeyboardInterrupt:
         wl_log.warning("Keyboard interrupt! Quitting...")
         sys.exit(-1)
 
+    # Post crawl
+    post_crawl()
+
+    # die
+    sys.exit(0)
+
+
+def post_crawl():
+    """Operations after the crawl."""
+    pass
+
 
 def build_crawl_dirs():
     # build crawl directory
+    ut.create_dir(cm.RESULTS_DIR)
     ut.create_dir(cm.CRAWL_DIR)
     ut.create_dir(cm.LOGS_DIR)
     copyfile(cm.TORRC_FILE, join(cm.LOGS_DIR, 'torrc'))
@@ -52,8 +76,8 @@ def build_crawl_dirs():
 
 def read_list_urls(file_path, start, stop):
     """Return list of urls from a file."""
-    assert (isfile(file_path))  # check that file exists
-    assert (not stat(file_path).st_size == 0)  # check that file is not empty
+    assert isfile(file_path)  # URL file does not exist
+    assert not stat(file_path).st_size == 0  # URL file is empty
     url_list = []
     try:
         with open(file_path) as f:
@@ -71,13 +95,18 @@ def parse_arguments():
 
     # List of urls to be crawled
     parser.add_argument('-u', '--url-file', required=True,
-                        help='Path to the file that contains the list of URLs to crawl.')
+                        help='Path to the file that contains the list of URLs to crawl.',
+                        default=cm.LOCALIZED_DATASET)
     parser.add_argument('-o', '--output',
                         help='Directory to dump the results (default=./results).',
                         default=cm.CRAWL_DIR)
     parser.add_argument('-b', '--tbb-path',
                         help="Path to the Tor Browser Bundle directory.",
                         default=cm.TBB_DEFAULT_DIR)
+    parser.add_argument('-t', '--type',
+                        choices=cm.CRAWLER_TYPES.keys(),
+                        help="Crawler type to use for this crawl.",
+                        default='basic')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='increase output verbosity',
                         default=False)
@@ -94,7 +123,7 @@ def parse_arguments():
     parser.add_argument('-x', '--virtual-display', action='store_true',
                         help='Use a virtual display (for headless browsing)',
                         default=False)
-    parser.add_argument('-c', '--capture-screen', action='store_true',
+    parser.add_argument('-c', '--screenshots', action='store_true',
                         help='Capture page screenshots',
                         default=False)
 

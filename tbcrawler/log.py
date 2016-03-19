@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 LOG_PREFIX = 'webfp'
 
@@ -58,7 +58,7 @@ def get_logger(logname, logtype='fc', level=logging.DEBUG,
 
 def add_symlink(linkname, src_file):
     """Create a symbolic link pointing to src_file"""
-    if os.path.lexists(linkname):   # check and remove if link exists
+    if os.path.lexists(linkname):  # check and remove if link exists
         try:
             os.unlink(linkname)
         except:
@@ -67,5 +67,6 @@ def add_symlink(linkname, src_file):
         os.symlink(src_file, linkname)
     except:
         print "Cannot create symlink!"
+
 
 wl_log = get_logger(LOG_PREFIX, logtype='c')

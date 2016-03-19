@@ -1,20 +1,16 @@
 import commands
-import distutils.dir_util as du
-import os
-import re
 import signal
-import sys
+from contextlib import contextmanager
 from hashlib import sha256
+from os import remove
+from shutil import copyfile
 from time import strftime
 from urllib2 import urlopen
 
 import psutil
+from scapy.all import *
 
 from log import wl_log
-
-
-class TimeExceededError(Exception):
-    pass
 
 
 def get_hash_of_directory(path):
@@ -39,32 +35,6 @@ def create_dir(dir_path):
 def append_timestamp(_str=''):
     """Append a timestamp to a string and return it."""
     return _str + strftime('%y%m%d_%H%M%S')
-
-
-def clone_dir_with_timestap(orig_dir_path):
-    """Copy a folder into the same directory and append a timestamp."""
-    new_dir = create_dir(append_timestamp(orig_dir_path))
-    try:
-        du.copy_tree(orig_dir_path, new_dir)
-    except Exception, e:
-        wl_log.error("Error while cloning the dir with timestamp" + str(e))
-    finally:
-        return new_dir
-
-
-def raise_signal(signum, frame):
-    raise TimeExceededError
-
-
-def timeout(duration):
-    """Timeout after given duration."""
-    signal.signal(signal.SIGALRM, raise_signal)  # linux only !!!
-    signal.alarm(duration)  # alarm after X seconds
-
-
-def cancel_timeout():
-    """Cancel a running alarm."""
-    signal.alarm(0)
 
 
 def get_filename_from_url(url, prefix):
@@ -161,24 +131,56 @@ def write_to_file(file_path, data):
         ofile.write(data)
 
 
-def download_file(uri, file_path):
-    write_to_file(file_path, read_url(uri))
+class TimeoutException(Exception): pass
 
 
-def extract_tbb_tarball(archive_path):
-    arch_dir = os.path.dirname(archive_path)
-    extracted_dir = os.path.join(arch_dir, "tor-browser_en-US")
-    tar_cmd = "tar xvf %s -C %s" % (archive_path, arch_dir)
-    status, txt = commands.getstatusoutput(tar_cmd)
-    if status or not os.path.isdir(extracted_dir):
-        wl_log.error("Error extracting TBB tarball %s: (%s: %s)"
-                     % (tar_cmd, status, txt))
-        return False
-    dest_dir = archive_path.split(".tar")[0]
-    mv_cmd = "mv %s %s" % (extracted_dir, dest_dir)
-    status, txt = commands.getstatusoutput(mv_cmd)
-    if status or not os.path.isdir(dest_dir):
-        wl_log.error("Error moving extracted TBB with the command %s: (%s: %s)"
-                     % (mv_cmd, status, txt))
-        return False
-    return True
+@contextmanager
+def timeout(seconds):
+    """From: http://stackoverflow.com/a/601168/1336939 """
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+
+
+def wrap(Class):
+    class Wrapper(object):
+        def __init__(self, *args, **kwargs):
+            self.args = args
+            self.kwargs = kwargs
+            self.object = None
+
+        def __getattr__(self, item):
+            if item == "launch":
+                return getattr(self, item)
+            return getattr(self.object, item)
+
+        @contextmanager
+        def launch(self):
+            self.object = Class(*self.args, **self.kwargs)
+            yield self.object
+            self.object.quit()
+
+    return Wrapper
+
+
+def filter_pcap(pcap_path, iplist, strip=False, clean=True):
+    orig_pcap = pcap_path + ".original"
+    copyfile(pcap_path, orig_pcap)
+    preader = PcapReader(orig_pcap)
+    pcap_filtered = []
+    for p in preader:
+        if TCP in p:
+            ip = p.payload
+            if strip:
+                p[TCP].remove_payload()  # stip payload (encrypted)
+            if ip.dst in iplist or ip.src in iplist:
+                pcap_filtered.append(p)
+    wrpcap(pcap_path, pcap_filtered)
+    remove(orig_pcap)
+

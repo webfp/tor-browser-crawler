@@ -6,24 +6,21 @@ import sys
 import urllib
 from genericpath import isfile
 from hashlib import sha256
-from os import mkdir, remove
+from os import remove
 from os.path import dirname, abspath, join, isdir
 from subprocess import Popen
 from urllib2 import URLError
 from xml.etree import ElementTree
 
 BASE_DIR = abspath(dirname(__file__))
-TBB_BASE_DIR = join(BASE_DIR, 'tbb')
-TBB_DIR = join(TBB_BASE_DIR, 'tor-browser_en-US')
-ETC_DIR = join(BASE_DIR, 'etc')
-RESULTS_DIR = join(BASE_DIR, 'results')
-TBB_VERSION_FILE = join(ETC_DIR, 'release.xml')
+TBB_DIR = join(BASE_DIR, 'tor-browser_en-US')
+TBB_VERSION_FILE = join(BASE_DIR, 'release.xml')
 TBB_VERSION_URL = "https://dist.torproject.org/torbrowser/update_2/release/Linux_x86_64-gcc3/x/en-US"
 TBB_ARCHIVE_URL = "https://archive.torproject.org/tor-package-archive/torbrowser/{0}/"
 TBB_DEVS_KEY_FP = '0x4E2C6E8793298290'
 CHECKSUM_FILE = "sha256sums-unsigned-build.txt"
 CHECKSUM_FILE_URL = TBB_ARCHIVE_URL + CHECKSUM_FILE
-CHECKSUM_FPATH = join(TBB_BASE_DIR, CHECKSUM_FILE)
+CHECKSUM_FPATH = join(BASE_DIR, CHECKSUM_FILE)
 
 
 class IntegrityCheckError(Exception):
@@ -46,10 +43,10 @@ def get_latest_tor():
 
     # download latest TBB
     tbb_filename = get_tbb_filename(version)
-    tbb_path = join(TBB_BASE_DIR, tbb_filename)
+    tbb_path = join(BASE_DIR, tbb_filename)
     tbb_url = TBB_ARCHIVE_URL.format(version) + tbb_filename
-    download_with_signature(tbb_url, TBB_BASE_DIR)
-    download_with_signature(CHECKSUM_FILE_URL.format(version), TBB_BASE_DIR)
+    download_with_signature(tbb_url, BASE_DIR)
+    download_with_signature(CHECKSUM_FILE_URL.format(version), BASE_DIR)
 
     # verify checksum
     if not is_checksum_correct(tbb_filename):
@@ -120,7 +117,7 @@ def is_signature_valid(sig_file):
 
 def is_checksum_correct(tbb_filename):
     # get SHA256 hash
-    tarball_path = join(TBB_BASE_DIR, tbb_filename)
+    tarball_path = join(BASE_DIR, tbb_filename)
     with open(tarball_path, 'rb') as f:
         contents = f.read()
         sha256_sum = sha256(contents).hexdigest()
@@ -155,20 +152,7 @@ def remove_tbb_file(file_path):
         remove(file_path + '.asc')
 
 
-def build_dirs():
-    # prepare directory
-    if not isdir(TBB_BASE_DIR):
-        mkdir(TBB_BASE_DIR)
-    if not isdir(RESULTS_DIR):
-        mkdir(RESULTS_DIR)
-    if not isdir(ETC_DIR):
-        mkdir(ETC_DIR)
-
-
 def tbb_setup(clean=False):
-    # make dirs
-    build_dirs()
-
     # import TBB devs gpg key
     try:
         import_gpg_key(TBB_DEVS_KEY_FP)
@@ -178,7 +162,7 @@ def tbb_setup(clean=False):
 
     # get the latest Tor Browser Bundle
     try:
-        tbb_path = get_latest_tor()
+        tarfile_path = get_latest_tor()
     except IntegrityCheckError as int_err:
         print("[gettor] - Error on integrity check: %s" % int_err)
         sys.exit(-1)
@@ -187,15 +171,16 @@ def tbb_setup(clean=False):
 
     # extract tar.xz
     try:
-        extract_tarfile(tbb_path)
+        extract_tarfile(tarfile_path)
     except ExtractionError as ext_err:
         print("[gettor] - Error when extracting tarball: %s" % ext_err)
         sys.exit(-1)
 
     # clean temp files
     if clean:
-        remove_tbb_file(tbb_path)
+        remove_tbb_file(tarfile_path)
         remove_tbb_file(CHECKSUM_FPATH)
+        remove(TBB_VERSION_FILE)
 
 
 if __name__ == '__main__':

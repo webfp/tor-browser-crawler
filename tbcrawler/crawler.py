@@ -1,77 +1,126 @@
 from os.path import join
+from pprint import pformat
 from time import sleep
 
-from selenium.common.exceptions import TimeoutException
-from tbselenium.tbdriver import TorBrowserDriver
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
-import tbcrawler.common as cm
-from tbcrawler import utils as ut
-from tbcrawler.dumputils import Sniffer
-from tbcrawler.log import wl_log, add_log_file_handler, add_symlink
-from torcontroller import TorController
+import common as cm
+import utils as ut
+from dumputils import Sniffer
+from log import wl_log
+
+# pauses
+PAUSE_BETWEEN_BATCHES = 5    # pause between two batches
+PAUSE_BETWEEN_SITES = 5      # pause before crawling a new site
+PAUSE_BETWEEN_INSTANCES = 4  # pause before visiting the same site (instances)
+PAUSE_IN_SITE = 5            # time to wait after the page loads
+
+# timeouts
+SOFT_VISIT_TIMEOUT = 120     # timeout used by selenium and dumpcap
+# signal based hard timeout in case soft timeout fails
+HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
 
 
 class CrawlerBase(object):
-    def __init__(self, output, torrc_dict, virt_display=False, capture=True):
-        self.output = output
-        self.torrc_dict = torrc_dict
-        self.virt_display = virt_display
-        self.capture = capture
+    def __init__(self, controller, driver, screenshots=True):
+        self.driver = driver
+        self.controller = controller
+        self.screenshots = screenshots
 
-    def post_crawl(self):
+    def crawl(self, job):
+        """Crawls a set of urls in batches."""
+        wl_log.info("Starting new crawl")
+        wl_log.info(pformat(job))
+        for job.batch in xrange(job.batches):
+            wl_log.info("**** Starting batch %s ***" % job.batch)
+            self.__do_batch(job)
+            sleep(PAUSE_BETWEEN_BATCHES)
+
+    def post_visit(self, job):
         pass
 
-    def crawl(self, urls, batches, instances):
-        wl_log.info("Crawl configuration:\n"
-                    "\tpath: %s,\n"
-                    "\tbatches: %s,\n"
-                    "\tinstances: %s,\n"
-                    "\tsites: %s"
-                    % (cm.CRAWL_DIR, batches, instances, len(urls)))
+    def __do_batch(self, job):
+        """
+        Must init/restart the Tor process to have a different circuit.
+        If the controller is configured to not pollute the profile, each
+        restart forces to switch the entry guard.
+        """
+        with self.controller.launch():
+            for job.index, job.url, url in enumerate(job.urls):
+                if len(job.url) > cm.MAX_FNAME_LENGTH:
+                    wl_log.warning("URL is too long: %s" % job.url)
+                    continue
+                self.__do_instance(job)
+                sleep(PAUSE_BETWEEN_SITES)
 
-        # for each batch
-        for batch in xrange(batches):
-            wl_log.info("********** Starting batch %s **********" % batch)
-            batch_dir = ut.create_dir(join(cm.CRAWL_DIR, str(batch)))
-            # init/reset tor process to have a different circuit.
-            # make sure that we're not using the same guard node again
-            wl_log.info("Restarting Tor before batch starts.")
+    def __do_instance(self, job):
+        for job.visit in xrange(job.instances):
+            ut.create_dir(job.path)
+            wl_log.info("*** Visit #%s to %s ***" % (job.instance, job.url))
+            with self.driver.launch():
+                try:
+                    self.driver.set_page_load_timeout(SOFT_VISIT_TIMEOUT)
+                except WebDriverException as wbd_exc:
+                    wl_log.error("Setting soft timeout %s", wbd_exc)
+                self.__do_visit(job)
+                if self.screenshots:
+                    self.driver.get_screenshot_as_png(job.png_file)
+            sleep(PAUSE_BETWEEN_INSTANCES)
+            self.post_visit(job)
 
-            with TorController(cm.TBB_DEFAULT_DIR,
-                               torrc_dict=self.torrc_dict,
-                               pollute=False) as tor_controller:
+    def __do_visit(self, job):
+        with Sniffer(path=job.pcap_file, filter=cm.DEFAULT_FILTER):
+            try:
+                with ut.timeout(HARD_VISIT_TIMEOUT):
+                    self.driver.get(job.url)
+                    sleep(PAUSE_IN_SITE)
+            except (ut.TimeExceededError, TimeoutException):
+                wl_log.error("Visit to %s has timed out!" % job.url)
 
-                # for each site
-                for i, url in enumerate(urls):
-                    if len(url) > cm.MAX_FNAME_LENGTH:
-                        wl_log.warning("Skipping URL because it's too long: %s" % url)
-                        continue
-                    site_dir = ut.create_dir(join(batch_dir, ut.get_filename_from_url(url, i)))
 
-                    # for each instance
-                    for instance in xrange(instances):
-                        inst_dir = ut.create_dir(join(site_dir, str(instance)))
-                        wl_log.info("********** Visit #%s to %s **********" % (instance, url))
+class CrawlerWebFP(CrawlerBase):
 
-                        with TorBrowserDriver(cm.TBB_DEFAULT_DIR,
-                                              socks_port=tor_controller.socks_port,
-                                              pref_dict=cm.FFPREFS,
-                                              virt_display=self.virt_display,
-                                              pollute=False) as tb_driver:
-                            inst_fname = "_".join(map(str, [instance, i, batch]))
-                            pcap_file = join(inst_dir, inst_fname + '.pcap')
+    def post_visit(self, job):
+        guard_ips = set([ip for ip in self.controller.get_all_guard_ips()])
+        wl_log.debug("Found %s guards in the consensus.", len(guard_ips))
+        try:
+            ut.filter_pcap(job.pcap_file, guard_ips, strip=True)
+        except Exception as e:
+            wl_log.error("ERROR: filtering pcap file: %s.", e)
+            wl_log.error("Check pcap: %s", job.pcap_file)
 
-                            with Sniffer(pcap_path=pcap_file, pcap_filter=cm.DEFAULT_FILTER) as sniffer:
-                                try:
-                                    ut.timeout(cm.HARD_VISIT_TIMEOUT)  # set timeout to stop the visit
-                                    tb_driver.get(url)
-                                    sleep(cm.PAUSE_BETWEEN_SITES)
-                                    if self.capture:
-                                        png_file = join(inst_dir, inst_fname + '.png')
-                                        tb_driver.get_screenshot_as_png(png_file)
-                                except (ut.TimeExceededError, TimeoutException) as exc:
-                                    wl_log.critical("Visit to %s timed out! %s %s" %
-                                                    (url, exc, type(exc)))
-                                finally:
-                                    ut.cancel_timeout()
-                                    self.post_crawl()
+
+class CrawlJob(object):
+    def __init__(self, batches, urls, visits):
+        self.batches = batches
+        self.urls = urls
+        self.visits = visits
+
+        # indices
+        self.batch = 0
+        self.site = 0
+        self.visit = 0
+
+    @property
+    def pcap_file(self):
+        return join(self.path, "capture.pcap")
+
+    @property
+    def png_file(self):
+        return join(self.path, "screenshot.png")
+
+    @property
+    def instance(self):
+        return self.batch * self.visit
+
+    @property
+    def url(self):
+        return self.urls[self.site]
+
+    @property
+    def path(self):
+        attributes = [self.batch, self.site.index, self.instance]
+        return "_".join(map(str, attributes))
+
+    # def __repr__(self):
+    #     return 'node(' + repr(self.name) + ', ' + repr(self.contents) + ')'

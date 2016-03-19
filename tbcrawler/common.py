@@ -2,6 +2,8 @@ import os
 from os.path import join, dirname, abspath, pardir
 from time import strftime
 
+from tbcrawler.crawler import CrawlerBase, CrawlerWebFP
+
 env_vars = os.environ
 # whether we're running on Travis CI or not
 running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
@@ -11,20 +13,15 @@ NUM_BATCHES = 10
 NUM_INSTANCES = 4
 MAX_SITES_PER_TOR_PROCESS = 100  # reset tor process after crawling 100 sites
 
-# timeouts and pauses
-PAUSE_BETWEEN_SITES = 5      # pause before crawling a new site
-WAIT_IN_SITE = 5             # time to wait after the page loads
-PAUSE_BETWEEN_INSTANCES = 4  # pause before visiting the same site (instances)
-SOFT_VISIT_TIMEOUT = 120     # timeout used by selenium and dumpcap
-# signal based hard timeout in case soft timeout fails
-HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
 # max dumpcap size in KB
 MAX_DUMP_SIZE = 40000
 # max filename length
 MAX_FNAME_LENGTH = 200
-
 STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
 # otherwise we had many cases where get_streams hanged
+
+
+CRAWLER_TYPES = {'basic': CrawlerBase, 'webfp': CrawlerWebFP}
 
 # virtual display dimensions
 XVFB_W = 1280
@@ -42,8 +39,7 @@ LOGS_DIR = join(CRAWL_DIR, 'logs')
 TOR_LOG = join(LOGS_DIR, 'tor.log')
 FF_LOG = join(LOGS_DIR, 'ff.log')
 TEST_DIR = join(SRC_DIR, 'test')
-TBB_BASE_DIR = join(BASE_DIR, 'tbb')
-TBB_DEFAULT_DIR = join(TBB_BASE_DIR, 'tor-browser_en-US')
+TBB_DIR = join(BASE_DIR, 'tor-browser_en-US')
 # Top URLs localized (DE) to prevent the effect of localization
 LOCALIZED_DATASET = join(ETC_DIR, "localized-urls-100-top.csv")
 
