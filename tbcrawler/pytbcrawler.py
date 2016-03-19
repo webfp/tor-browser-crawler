@@ -11,7 +11,7 @@ from tbselenium.tbdriver import TorBrowserDriver
 
 import common as cm
 import utils as ut
-from crawler import CrawlJob
+import crawler as crawler_mod
 from log import add_log_file_handler
 from log import wl_log, add_symlink
 from torcontroller import TorController
@@ -28,7 +28,7 @@ def run():
     url_list = read_list_urls(args.url_file, args.start, args.stop)
 
     # Configure logger
-    add_log_file_handler(wl_log, join(cm.LOGS_DIR, "crawl.log"))
+    add_log_file_handler(wl_log, cm.CRAWL_DEFAULT_LOG)
 
     # Configure controller
     controller = TorController(cm.TBB_DIR,
@@ -46,10 +46,11 @@ def run():
                                        pollute=False)
 
     # Instantiate crawler
-    crawler = cm.CRAWLER_TYPES[args.type](driver, controller, args.screenshots)
+    crawl_type = getattr(crawler_mod, "Crawler" + args.type)
+    crawler = crawl_type(driver, controller, args.screenshots)
 
     # Configure crawl
-    job = CrawlJob(args.batches, url_list, args.instances)
+    job = crawler_mod.CrawlJob(args.batches, url_list, args.instances)
 
     # Run the crawl
     try:
@@ -106,9 +107,9 @@ def parse_arguments():
                         help='Path to the file that contains the list of URLs to crawl.',
                         default=cm.LOCALIZED_DATASET)
     parser.add_argument('-t', '--type',
-                        choices=cm.CRAWLER_TYPES.keys(),
+                        choices=cm.CRAWLER_TYPES,
                         help="Crawler type to use for this crawl.",
-                        default='basic')
+                        default='Base')
     parser.add_argument('-o', '--output',
                         help='Directory to dump the results (default=./results).',
                         default=cm.CRAWL_DIR)

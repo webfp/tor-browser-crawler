@@ -22,7 +22,8 @@ STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
 
 DEFAULT_SOCKS_PORT = 9051
 
-CRAWLER_TYPES = {'basic': CrawlerBase, 'webfp': CrawlerWebFP}
+CRAWLER_TYPES = ['Base', 'WebFP']
+
 
 # virtual display dimensions
 XVFB_W = 1280
