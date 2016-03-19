@@ -9,12 +9,12 @@ from sys import maxsize, argv
 
 from tbselenium.tbdriver import TorBrowserDriver
 
-import tbcrawler.common as cm
+import common as cm
+import utils as ut
+from crawler import CrawlJob
 from log import add_log_file_handler
-from tbcrawler import utils as ut
-from tbcrawler.crawler import CrawlJob
-from tbcrawler.log import wl_log, add_symlink
-from tbcrawler.torcontroller import TorController
+from log import wl_log, add_symlink
+from torcontroller import TorController
 
 
 def run():
@@ -30,14 +30,20 @@ def run():
     # Configure logger
     add_log_file_handler(wl_log, join(cm.LOGS_DIR, "crawl.log"))
 
+    # Configure controller
+    controller = TorController(cm.TBB_DIR,
+                               torrc_dict=cm.TORRC,
+                               pollute=False)
+
     # Configure browser
     TorBrowserDriver.add_exceptions(url_list)
-    driver = ut.wrap(TorBrowserDriver)(cm.TBB_DEFAULT_DIR,
-                                       cm.FFPREFS, cm.TORRC)
-
-    # Configure controller
-    controller = TorController(cm.TBB_DEFAULT_DIR,
-                                        cm.TORRC)
+    socks_port = int(cm.TORRC['SocksPort']) if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
+    driver = ut.wrap(TorBrowserDriver)(cm.TBB_DIR,
+                                       tbb_logfile_path=cm.DEFAULT_FF_LOG,
+                                       pref_dict=cm.FFPREFS,
+                                       socks_port=socks_port,
+                                       xvfb=args.vdisplay,
+                                       pollute=False)
 
     # Instantiate crawler
     crawler = cm.CRAWLER_TYPES[args.type](driver, controller, args.screenshots)
@@ -61,6 +67,8 @@ def run():
 
 def post_crawl():
     """Operations after the crawl."""
+    # TODO: pack crawl
+    # TODO: sanity checks
     pass
 
 
@@ -97,16 +105,16 @@ def parse_arguments():
     parser.add_argument('-u', '--url-file', required=True,
                         help='Path to the file that contains the list of URLs to crawl.',
                         default=cm.LOCALIZED_DATASET)
+    parser.add_argument('-t', '--type',
+                        choices=cm.CRAWLER_TYPES.keys(),
+                        help="Crawler type to use for this crawl.",
+                        default='basic')
     parser.add_argument('-o', '--output',
                         help='Directory to dump the results (default=./results).',
                         default=cm.CRAWL_DIR)
     parser.add_argument('-b', '--tbb-path',
                         help="Path to the Tor Browser Bundle directory.",
-                        default=cm.TBB_DEFAULT_DIR)
-    parser.add_argument('-t', '--type',
-                        choices=cm.CRAWLER_TYPES.keys(),
-                        help="Crawler type to use for this crawl.",
-                        default='basic')
+                        default=cm.TBB_DIR)
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='increase output verbosity',
                         default=False)

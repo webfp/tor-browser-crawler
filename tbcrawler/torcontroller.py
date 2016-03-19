@@ -17,7 +17,7 @@ class TorController(object):
                  tbb_path=None,
                  tor_binary_path=None,
                  tor_data_path=None,
-                 torrc_dict=cm.TORRC,
+                 torrc_dict={},
                  pollute=True):
         assert (tbb_path or tor_binary_path and tor_data_path)
         if tbb_path:

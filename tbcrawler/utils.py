@@ -131,7 +131,7 @@ def write_to_file(file_path, data):
         ofile.write(data)
 
 
-class TimeoutException(Exception): pass
+class HardTimeoutException(Exception): pass
 
 
 @contextmanager

@@ -74,7 +74,7 @@ class CrawlerBase(object):
                 with ut.timeout(HARD_VISIT_TIMEOUT):
                     self.driver.get(job.url)
                     sleep(PAUSE_IN_SITE)
-            except (ut.TimeExceededError, TimeoutException):
+            except (ut.HardTimeoutException, TimeoutException):
                 wl_log.error("Visit to %s has timed out!" % job.url)
 
 

@@ -20,6 +20,7 @@ MAX_FNAME_LENGTH = 200
 STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
 # otherwise we had many cases where get_streams hanged
 
+DEFAULT_SOCKS_PORT = 9051
 
 CRAWLER_TYPES = {'basic': CrawlerBase, 'webfp': CrawlerWebFP}
 
@@ -36,8 +37,8 @@ FFPREF_FILE = join(ETC_DIR, 'ffprefs')
 SRC_DIR = join(BASE_DIR, 'tbcrawler')
 CRAWL_DIR = join(RESULTS_DIR, strftime('%y%m%d_%H%M%S'))
 LOGS_DIR = join(CRAWL_DIR, 'logs')
-TOR_LOG = join(LOGS_DIR, 'tor.log')
-FF_LOG = join(LOGS_DIR, 'ff.log')
+DEFAULT_TOR_LOG = join(LOGS_DIR, 'tor.log')
+DEFAULT_FF_LOG = join(LOGS_DIR, 'ff.log')
 TEST_DIR = join(SRC_DIR, 'test')
 TBB_DIR = join(BASE_DIR, 'tor-browser_en-US')
 # Top URLs localized (DE) to prevent the effect of localization
@@ -50,7 +51,7 @@ DEFAULT_FILTER = 'tcp and not host %s and not tcp port 22 and not tcp port 20' %
 
 
 with open(TORRC_FILE) as torrc_file:
-    TORRC = {'Log': 'INFO file %s' % TOR_LOG}
+    TORRC = {'Log': 'INFO file %s' % DEFAULT_TOR_LOG}
     for line in torrc_file:
         if line.startswith('#') or line.startswith('\n'):
             continue
