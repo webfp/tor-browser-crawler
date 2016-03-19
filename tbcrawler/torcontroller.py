@@ -8,8 +8,8 @@ from stem.control import Controller
 from stem.util import term
 from tbselenium.common import DEFAULT_TOR_DATA_PATH, DEFAULT_TOR_BINARY_PATH
 
-import tbcrawler.common as cm
-from tbcrawler import utils as ut
+import common as cm
+import utils as ut
 
 
 class TorController(object):

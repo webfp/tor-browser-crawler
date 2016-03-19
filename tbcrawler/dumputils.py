@@ -2,9 +2,9 @@ import os
 import subprocess
 import time
 
-import tbcrawler.common as cm
-from tbcrawler import utils as ut
-from tbcrawler.log import wl_log
+import common as cm
+import utils as ut
+from log import wl_log
 
 DUMPCAP_START_TIMEOUT = 10.0
 
