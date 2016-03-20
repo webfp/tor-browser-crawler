@@ -3,6 +3,7 @@ stem
 psutil>=2.2.1
 scapy
 pcapy
+xvfbwrapper
 selenium>=2.45.0
-pyvirtualdisplay
 tld
+-e git+https://github.com/webfp/tor-browser-selenium.git#egg=tbselenium-1.0
