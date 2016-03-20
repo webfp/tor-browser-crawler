@@ -16,7 +16,6 @@ PAUSE_BETWEEN_VISITS = 4  # pause before visiting the same site (instances)
 PAUSE_IN_SITE = 5            # time to wait after the page loads
 
 
-
 class CrawlerBase(object):
     def __init__(self, driver, controller, screenshots=True):
         self.driver = driver
@@ -52,32 +51,39 @@ class CrawlerBase(object):
     def __do_instance(self, job):
         for job.visit in xrange(job.visits):
             ut.create_dir(job.path)
-            wl_log.info("*** Visit #%s to %s ***" % (job.visit, job.url))
+            wl_log.info("*** Visit #%s to %s ***", job.visit, job.url)
             with self.driver.launch():
                 try:
                     self.driver.set_page_load_timeout(cm.SOFT_VISIT_TIMEOUT)
-                except WebDriverException as wbd_exc:
-                    wl_log.error("Setting soft timeout %s", wbd_exc)
+                except WebDriverException as seto_exc:
+                    wl_log.error("Setting soft timeout %s", seto_exc)
                 self.__do_visit(job)
                 if self.screenshots:
-                    self.driver.get_screenshot_as_file(job.png_file)
+                    try:
+                        self.driver.get_screenshot_as_file(job.png_file)
+                    except WebDriverException:
+                        wl_log.error("Cannot get screenshot.")
             sleep(PAUSE_BETWEEN_VISITS)
             self.post_visit(job)
 
     def __do_visit(self, job):
         with Sniffer(path=job.pcap_file, filter=cm.DEFAULT_FILTER):
+            sleep(1)  # make sure dumpcap is running
             try:
                 with ut.timeout(cm.HARD_VISIT_TIMEOUT):
                     self.driver.get(job.url)
                     sleep(PAUSE_IN_SITE)
             except (ut.HardTimeoutException, TimeoutException):
-                wl_log.error("Visit to %s has timed out!" % job.url)
+                wl_log.error("Visit to %s has timed out!", job.url)
+            except Exception as exc:
+                wl_log.error("Unknown %s exception: %s", exc.type, exc)
 
 
 class CrawlerWebFP(CrawlerBase):
     def post_visit(self, job):
         guard_ips = set([ip for ip in self.controller.get_all_guard_ips()])
         wl_log.debug("Found %s guards in the consensus.", len(guard_ips))
+        wl_log.info("Filtering packets without a guard IP.")
         try:
             ut.filter_pcap(job.pcap_file, guard_ips, strip=True)
         except Exception as e:
