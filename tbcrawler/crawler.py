@@ -1,6 +1,7 @@
 from os.path import join
 from pprint import pformat
 from time import sleep
+from shutil import copytree
 
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
@@ -83,6 +84,11 @@ class CrawlerWebFP(CrawlerBase):
         except Exception as e:
             wl_log.error("ERROR: filtering pcap file: %s.", e)
             wl_log.error("Check pcap: %s", job.pcap_file)
+		
+		# copy browser profile before closing driver
+		visit_pofile = join(job.path, 'profile')
+		ut.create_dir(visit_profile)
+		copytree(self.driver.temp_profile_path, visit_profile)
 
 
 class CrawlJob(object):
