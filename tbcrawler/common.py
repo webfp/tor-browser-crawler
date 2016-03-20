@@ -2,8 +2,6 @@ import os
 from os.path import join, dirname, abspath, pardir
 from time import strftime
 
-from tbcrawler.crawler import CrawlerBase, CrawlerWebFP
-
 env_vars = os.environ
 # whether we're running on Travis CI or not
 running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
@@ -20,10 +18,14 @@ MAX_FNAME_LENGTH = 200
 STREAM_CLOSE_TIMEOUT = 20  # wait 20 seconds before raising an alarm signal
 # otherwise we had many cases where get_streams hanged
 
+# timeouts
+SOFT_VISIT_TIMEOUT = 120     # timeout used by selenium and dumpcap
+# signal based hard timeout in case soft timeout fails
+HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
+
 DEFAULT_SOCKS_PORT = 9051
 
 CRAWLER_TYPES = ['Base', 'WebFP']
-
 
 # virtual display dimensions
 XVFB_W = 1280
@@ -38,6 +40,7 @@ FFPREF_FILE = join(ETC_DIR, 'ffprefs')
 SRC_DIR = join(BASE_DIR, 'tbcrawler')
 CRAWL_DIR = join(RESULTS_DIR, strftime('%y%m%d_%H%M%S'))
 LOGS_DIR = join(CRAWL_DIR, 'logs')
+DEFAULT_CRAWL_LOG = join(LOGS_DIR, 'crawl.log')
 DEFAULT_TOR_LOG = join(LOGS_DIR, 'tor.log')
 DEFAULT_FF_LOG = join(LOGS_DIR, 'ff.log')
 TEST_DIR = join(SRC_DIR, 'test')

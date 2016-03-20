@@ -148,27 +148,6 @@ def timeout(seconds):
         signal.alarm(0)
 
 
-def wrap(Class):
-    class Wrapper(object):
-        def __init__(self, *args, **kwargs):
-            self.args = args
-            self.kwargs = kwargs
-            self.object = None
-
-        def __getattr__(self, item):
-            if item == "launch":
-                return getattr(self, item)
-            return getattr(self.object, item)
-
-        @contextmanager
-        def launch(self):
-            self.object = Class(*self.args, **self.kwargs)
-            yield self.object
-            self.object.quit()
-
-    return Wrapper
-
-
 def filter_pcap(pcap_path, iplist, strip=False, clean=True):
     orig_pcap = pcap_path + ".original"
     copyfile(pcap_path, orig_pcap)

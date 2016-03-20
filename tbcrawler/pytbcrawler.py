@@ -2,12 +2,12 @@ import argparse
 import sys
 import traceback
 from logging import INFO, DEBUG
-from os import stat
+from os import stat, chdir
 from os.path import isfile, join
 from shutil import copyfile
 from sys import maxsize, argv
 
-from tbselenium.tbdriver import TorBrowserDriver
+from tbselenium.tbdriver import TorBrowserWrapper, TorBrowserDriver
 
 import common as cm
 import utils as ut
@@ -28,7 +28,7 @@ def run():
     url_list = read_list_urls(args.url_file, args.start, args.stop)
 
     # Configure logger
-    add_log_file_handler(wl_log, cm.CRAWL_DEFAULT_LOG)
+    add_log_file_handler(wl_log, cm.DEFAULT_CRAWL_LOG)
 
     # Configure controller
     controller = TorController(cm.TBB_DIR,
@@ -37,13 +37,14 @@ def run():
 
     # Configure browser
     TorBrowserDriver.add_exceptions(url_list)
-    socks_port = int(cm.TORRC['SocksPort']) if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
-    driver = ut.wrap(TorBrowserDriver)(cm.TBB_DIR,
-                                       tbb_logfile_path=cm.DEFAULT_FF_LOG,
-                                       pref_dict=cm.FFPREFS,
-                                       socks_port=socks_port,
-                                       xvfb=args.vdisplay,
-                                       pollute=False)
+    socks_port = int(cm.TORRC['SocksPort']) \
+        if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
+    driver = TorBrowserWrapper(cm.TBB_DIR,
+                               tbb_logfile_path=cm.DEFAULT_FF_LOG,
+                               pref_dict=cm.FFPREFS,
+                               socks_port=socks_port,
+                               virt_display=args.virtual_display,
+                               pollute=False)
 
     # Instantiate crawler
     crawl_type = getattr(crawler_mod, "Crawler" + args.type)
@@ -53,6 +54,7 @@ def run():
     job = crawler_mod.CrawlJob(args.batches, url_list, args.instances)
 
     # Run the crawl
+    chdir(cm.CRAWL_DIR)
     try:
         crawler.crawl(job)
     except KeyboardInterrupt:
@@ -129,9 +131,9 @@ def parse_arguments():
                         help='Number of instances to crawl for each web page (default: %s)' % cm.NUM_INSTANCES,
                         default=cm.NUM_INSTANCES)
     # Crawler features
-    parser.add_argument('-x', '--virtual-display', action='store_true',
-                        help='Use a virtual display (for headless browsing)',
-                        default=False)
+    parser.add_argument('-x', '--virtual-display',
+                        help='Dimensions of the virtual display, eg 1200x800',
+                        default='')
     parser.add_argument('-c', '--screenshots', action='store_true',
                         help='Capture page screenshots',
                         default=False)
