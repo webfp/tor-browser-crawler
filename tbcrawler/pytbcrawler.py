@@ -51,7 +51,7 @@ def run():
     crawler = crawl_type(driver, controller, args.screenshots)
 
     # Configure crawl
-    job = crawler_mod.CrawlJob(args.batches, url_list, args.instances)
+    job = crawler_mod.CrawlJob(args.batches, url_list, args.visits)
 
     # Run the crawl
     chdir(cm.CRAWL_DIR)
@@ -122,13 +122,13 @@ def parse_arguments():
                         help='increase output verbosity',
                         default=False)
 
-    # For understanding batch and instance parameters please refer
+    # For understanding batch and visit parameters please refer
     # to Wang and Goldberg's WPES'13 paper, Section 4.1.4
     parser.add_argument('--batches', type=int,
                         help='Number of batches in the crawl (default: %s)' % cm.NUM_BATCHES,
                         default=cm.NUM_BATCHES)
-    parser.add_argument('--instances', type=int,
-                        help='Number of instances to crawl for each web page (default: %s)' % cm.NUM_INSTANCES,
+    parser.add_argument('--visits', type=int,
+                        help='Number of visits to a page for each crawl (default: %s)' % cm.NUM_INSTANCES,
                         default=cm.NUM_INSTANCES)
     # Crawler features
     parser.add_argument('-x', '--virtual-display',
