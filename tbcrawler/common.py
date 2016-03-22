@@ -2,6 +2,19 @@ import os
 from os.path import join, dirname, abspath, pardir
 from time import strftime
 
+
+def parse_config(fname):
+    config_dict = {}
+    with open(fname) as f:
+        for line in f:
+            if line.startswith('#') or line.startswith('\n'):
+                continue
+            option, args = line.rstrip().split(" ", 1)
+            args = args.split("#", 1)[0]
+            config_dict.update({option: args})
+    return config_dict
+
+
 env_vars = os.environ
 # whether we're running on Travis CI or not
 running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
@@ -25,7 +38,7 @@ HARD_VISIT_TIMEOUT = SOFT_VISIT_TIMEOUT + 10
 
 DEFAULT_SOCKS_PORT = 9051
 
-CRAWLER_TYPES = ['Base', 'WebFP']
+CRAWLER_TYPES = ['Base', 'WebFP', 'Multitab']
 
 # virtual display dimensions
 XVFB_W = 1280
@@ -55,21 +68,5 @@ LXC_GATEWAY_IP = "10.0.3.1"  # default gateway IP of LXC
 LOCALHOST_IP = "127.0.0.1"  # default localhost IP
 DEFAULT_FILTER = 'tcp and not host %s and not tcp port 22 and not tcp port 20' % LOCALHOST_IP
 
-
-with open(TORRC_FILE) as torrc_file:
-    TORRC = {'Log': 'INFO file %s' % DEFAULT_TOR_LOG}
-    for line in torrc_file:
-        if line.startswith('#') or line.startswith('\n'):
-            continue
-        option, args = line.rstrip().split(" ", 1)
-        args = args.split("#", 1)[0]
-        TORRC.update({option: args})
-
-with open(FFPREF_FILE) as ffpref_file:
-    FFPREFS = {}
-    for line in ffpref_file:
-        if line.startswith('#') or line.startswith('\n'):
-            continue
-        option, args = line.rstrip().split(" ", 1)
-        args = args.split("#", 1)[0]
-        FFPREFS.update({option: args})
+TORRC = parse_config(TORRC_FILE)
+FFPREFS = parse_config(FFPREF_FILE)

@@ -91,6 +91,10 @@ class CrawlerWebFP(CrawlerBase):
             wl_log.error("Check pcap: %s", job.pcap_file)
 
 
+class CrawlerMultitab(CrawlerWebFP):
+    pass
+
+
 class CrawlJob(object):
     def __init__(self, batches, urls, visits):
         self.urls = urls
