@@ -10,3 +10,4 @@ __pycache__
 *.un~
 .vagrant/
 playbook.retry
+*.swp
