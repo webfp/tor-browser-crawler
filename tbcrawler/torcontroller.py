@@ -7,6 +7,7 @@ import stem.process
 from stem.control import Controller
 from stem.util import term
 from tbselenium.common import DEFAULT_TOR_DATA_PATH, DEFAULT_TOR_BINARY_PATH
+from tbselenium.utils import clone_dir_temporary
 
 import common as cm
 import utils as ut
@@ -107,8 +108,9 @@ class TorController(object):
         except:
             print("Exception closing stream")
 
+
     @contextmanager
     def launch(self):
         self.launch_tor_service()
-        yield self
+        yield
         self.quit()

@@ -2,12 +2,12 @@ import argparse
 import sys
 import traceback
 from logging import INFO, DEBUG
-from os import stat
+from os import stat, chdir
 from os.path import isfile, join
 from shutil import copyfile
 from sys import maxsize, argv
 
-from tbselenium.tbdriver import TorBrowserDriver
+from tbselenium.tbdriver import TorBrowserWrapper, TorBrowserDriver
 
 import common as cm
 import utils as ut
@@ -37,22 +37,24 @@ def run():
 
     # Configure browser
     TorBrowserDriver.add_exceptions(url_list)
-    socks_port = int(cm.TORRC['SocksPort']) if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
-    driver = ut.wrap(TorBrowserDriver)(cm.TBB_DIR,
-                                       tbb_logfile_path=cm.DEFAULT_FF_LOG,
-                                       pref_dict=cm.FFPREFS,
-                                       socks_port=socks_port,
-                                       xvfb=args.vdisplay,
-                                       pollute=False)
+    socks_port = int(cm.TORRC['SocksPort']) \
+        if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
+    driver = TorBrowserWrapper(cm.TBB_DIR,
+                               tbb_logfile_path=cm.DEFAULT_FF_LOG,
+                               pref_dict=cm.FFPREFS,
+                               socks_port=socks_port,
+                               virt_display=args.virtual_display,
+                               pollute=False)
 
     # Instantiate crawler
     crawl_type = getattr(crawler_mod, "Crawler" + args.type)
     crawler = crawl_type(driver, controller, args.screenshots)
 
     # Configure crawl
-    job = crawler_mod.CrawlJob(args.batches, url_list, args.instances)
+    job = crawler_mod.CrawlJob(args.batches, url_list, args.visits)
 
     # Run the crawl
+    chdir(cm.CRAWL_DIR)
     try:
         crawler.crawl(job)
     except KeyboardInterrupt:
@@ -120,18 +122,18 @@ def parse_arguments():
                         help='increase output verbosity',
                         default=False)
 
-    # For understanding batch and instance parameters please refer
+    # For understanding batch and visit parameters please refer
     # to Wang and Goldberg's WPES'13 paper, Section 4.1.4
     parser.add_argument('--batches', type=int,
                         help='Number of batches in the crawl (default: %s)' % cm.NUM_BATCHES,
                         default=cm.NUM_BATCHES)
-    parser.add_argument('--instances', type=int,
-                        help='Number of instances to crawl for each web page (default: %s)' % cm.NUM_INSTANCES,
+    parser.add_argument('--visits', type=int,
+                        help='Number of visits to a page for each crawl (default: %s)' % cm.NUM_INSTANCES,
                         default=cm.NUM_INSTANCES)
     # Crawler features
-    parser.add_argument('-x', '--virtual-display', action='store_true',
-                        help='Use a virtual display (for headless browsing)',
-                        default=False)
+    parser.add_argument('-x', '--virtual-display',
+                        help='Dimensions of the virtual display, eg 1200x800',
+                        default='')
     parser.add_argument('-c', '--screenshots', action='store_true',
                         help='Capture page screenshots',
                         default=False)
