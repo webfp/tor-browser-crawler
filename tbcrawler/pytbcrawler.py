@@ -1,13 +1,14 @@
 import argparse
 import sys
 import traceback
+from contextlib import contextmanager
 from logging import INFO, DEBUG
 from os import stat, chdir
 from os.path import isfile, join
 from shutil import copyfile
 from sys import maxsize, argv
 
-from tbselenium.tbdriver import TorBrowserWrapper, TorBrowserDriver
+from tbselenium.tbdriver import TorBrowserDriver
 
 import common as cm
 import utils as ut
@@ -159,6 +160,32 @@ def parse_arguments():
 
     wl_log.debug("Command line parameters: %s" % argv)
     return args
+
+
+class TorBrowserWrapper(object):
+    """Wraps the TorBrowserDriver to configure it at the constructor
+    and run it with the `launch` method.
+
+    We might consider to change the TorBrowserDriver itself to follow
+    torcontroller and stem behaviour: init configures and a method is
+    used to launch driver/controller, and this method is the one used
+    to implement the contextmanager.
+    """
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+        self.driver = None
+
+    def __getattr__(self, item):
+        if item == "launch":
+            return getattr(self, item)
+        return getattr(self.driver, item)
+
+    @contextmanager
+    def launch(self):
+        self.driver = TorBrowserDriver(*self.args, **self.kwargs)
+        yield self.driver
+        self.driver.quit()
 
 
 if __name__ == '__main__':

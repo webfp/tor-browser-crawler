@@ -130,3 +130,5 @@ class CrawlJob(object):
     def __repr__(self):
         return "Batches: %s, Sites: %s, Visits: %s" \
                % (self.batches, len(self.urls), self.visits)
+
+
