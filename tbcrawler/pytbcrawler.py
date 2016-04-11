@@ -28,7 +28,7 @@ def run():
     url_list = read_list_urls(args.url_file, args.start, args.stop)
 
     # Configure logger
-    add_log_file_handler(wl_log, cm.CRAWL_DEFAULT_LOG)
+    add_log_file_handler(wl_log, cm.DEFAULT_CRAWL_LOG)
 
     # Configure controller
     controller = TorController(cm.TBB_DIR,
