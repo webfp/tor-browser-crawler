@@ -123,7 +123,7 @@ class CrawlJob(object):
     @property
     def path(self):
         attributes = [self.batch, self.site, self.instance]
-        return "_".join(map(str, attributes))
+        return join(cm.CRAWL_DIR, "_".join(map(str, attributes)))
 
     def __repr__(self):
         return "Batches: %s, Sites: %s, Visits: %s" \
