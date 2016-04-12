@@ -134,6 +134,11 @@ def write_to_file(file_path, data):
 class HardTimeoutException(Exception): pass
 
 
+def get_dict_subconfig(section, subsection):
+    return {option.split()[1]: config.get(section, option)
+            for option in config.options(section) if option.startswith(subsection)}
+
+
 @contextmanager
 def timeout(seconds):
     """From: http://stackoverflow.com/a/601168/1336939 """
