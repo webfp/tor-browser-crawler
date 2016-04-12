@@ -46,6 +46,7 @@ XVFB_H = 720
 
 # Default paths
 BASE_DIR = abspath(join(dirname(__file__), pardir))
+CONFIG_FILE = join(BASE_DIR, 'config.ini')
 RESULTS_DIR = join(BASE_DIR, 'results')
 ETC_DIR = join(BASE_DIR, 'etc')
 CONFIG_DIR = join(BASE_DIR, 'config')
