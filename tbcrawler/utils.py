@@ -81,7 +81,7 @@ def pack_crawl_data(crawl_dir):
 
 def gen_all_children_procs(parent_pid):
     parent = psutil.Process(parent_pid)
-    for child in parent.get_children(recursive=True):
+    for child in parent.children(recursive=True):
         yield child
 
 
