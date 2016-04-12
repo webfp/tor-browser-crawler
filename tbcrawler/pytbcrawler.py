@@ -39,14 +39,13 @@ def run():
                                pollute=False)
 
     # Configure browser
-    TorBrowserDriver.add_exceptions(url_list)
     ffprefs = ut.get_dict_subconfig(config, args.config, "ffpref")
     driver = TorBrowserWrapper(cm.TBB_DIR,
                                tbb_logfile_path=cm.DEFAULT_FF_LOG,
                                pref_dict=ffprefs,
                                socks_port=int(torrc_config['socksport']),
                                virt_display=args.virtual_display,
-                               pollute=False)
+                               canvas_exceptions=url_list)
 
     # Instantiate crawler
     crawl_type = getattr(crawler_mod, "Crawler" + args.type)
