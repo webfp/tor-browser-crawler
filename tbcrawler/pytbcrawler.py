@@ -177,6 +177,8 @@ class TorBrowserWrapper(object):
         self.driver = None
 
     def __getattr__(self, item):
+        if self.driver is None:
+            return
         if item == "launch":
             return getattr(self, item)
         return getattr(self.driver, item)
