@@ -26,7 +26,7 @@ class CrawlerBase(object):
         for self.job.batch in xrange(self.job.batches):
             wl_log.info("**** Starting batch %s ***" % self.job.batch)
             self.__do_batch()
-            sleep(self.job.pause_between_batches)
+            sleep(float(self.job.config['pause_between_batches']))
 
     def post_visit(self):
         pass
@@ -43,7 +43,7 @@ class CrawlerBase(object):
                     wl_log.warning("URL is too long: %s" % self.job.url)
                     continue
                 self.__do_instance()
-                sleep(self.job.pause_between_sites)
+                sleep(float(self.job.config['pause_between_sites']))
 
     def __do_instance(self):
         for self.job.visit in xrange(self.job.visits):
@@ -60,16 +60,16 @@ class CrawlerBase(object):
                         self.driver.get_screenshot_as_file(self.job.png_file)
                     except WebDriverException:
                         wl_log.error("Cannot get screenshot.")
-            sleep(self.job.pause_between_visits)
+            sleep(float(self.job.config['pause_between_visits']))
             self.post_visit()
 
     def __do_visit(self):
         with Sniffer(path=self.job.pcap_file, filter=cm.DEFAULT_FILTER):
             sleep(1)  # make sure dumpcap is running
             try:
-                with ut.timeout(self.job.hard_visit_timeout):
+                with ut.timeout(cm.HARD_VISIT_TIMEOUT):
                     self.driver.get(self.job.url)
-                    sleep(self.job.pause_in_site)
+                    sleep(float(self.job.config['pause_in_site']))
             except (ut.HardTimeoutException, TimeoutException):
                 wl_log.error("Visit to %s has timed out!", self.job.url)
             except Exception as exc:
