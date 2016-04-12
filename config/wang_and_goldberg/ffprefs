@@ -1,8 +1,0 @@
-# Firefox preferences
-browser.startup.page 0
-browser.startup.homepage about:newtab
-
-# Wang and Goldberg:
-network.http.pipelining.max-optimistic-requests 5000
-network.http.pipelining.maxrequests 15000
-network.http.pipelining False

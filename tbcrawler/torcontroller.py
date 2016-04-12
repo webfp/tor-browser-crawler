@@ -35,8 +35,8 @@ class TorController(object):
         self.tmp_tor_data_dir = None
         self.tor_process = None
         self.pollute = pollute
-        self.control_port = int(self.torrc_dict['ControlPort'])
-        self.socks_port = int(self.torrc_dict['SocksPort'])
+        self.control_port = int(self.torrc_dict['controlport'])
+        self.socks_port = int(self.torrc_dict['socksport'])
         self.export_lib_path()
 
     def get_guard_ips(self):

@@ -9,12 +9,6 @@ import utils as ut
 from dumputils import Sniffer
 from log import wl_log
 
-# pauses
-PAUSE_BETWEEN_BATCHES = 5    # pause between two batches
-PAUSE_BETWEEN_SITES = 5      # pause before crawling a new site
-PAUSE_BETWEEN_VISITS = 4  # pause before visiting the same site (instances)
-PAUSE_IN_SITE = 5            # time to wait after the page loads
-
 
 class CrawlerBase(object):
     def __init__(self, driver, controller, screenshots=True):
@@ -22,73 +16,76 @@ class CrawlerBase(object):
         self.controller = controller
         self.screenshots = screenshots
 
+        self.job = None
+
     def crawl(self, job):
         """Crawls a set of urls in batches."""
+        self.job = job
         wl_log.info("Starting new crawl")
-        wl_log.info(pformat(job))
-        for job.batch in xrange(job.batches):
-            wl_log.info("**** Starting batch %s ***" % job.batch)
-            self.__do_batch(job)
-            sleep(PAUSE_BETWEEN_BATCHES)
+        wl_log.info(pformat(self.job))
+        for self.job.batch in xrange(self.job.batches):
+            wl_log.info("**** Starting batch %s ***" % self.job.batch)
+            self.__do_batch()
+            sleep(self.job.pause_between_batches)
 
-    def post_visit(self, job):
+    def post_visit(self):
         pass
 
-    def __do_batch(self, job):
+    def __do_batch(self):
         """
         Must init/restart the Tor process to have a different circuit.
         If the controller is configured to not pollute the profile, each
         restart forces to switch the entry guard.
         """
         with self.controller.launch():
-            for job.site in xrange(len(job.urls)):
-                if len(job.url) > cm.MAX_FNAME_LENGTH:
-                    wl_log.warning("URL is too long: %s" % job.url)
+            for self.job.site in xrange(len(self.job.urls)):
+                if len(self.job.url) > cm.MAX_FNAME_LENGTH:
+                    wl_log.warning("URL is too long: %s" % self.job.url)
                     continue
-                self.__do_instance(job)
-                sleep(PAUSE_BETWEEN_SITES)
+                self.__do_instance()
+                sleep(self.job.pause_between_sites)
 
-    def __do_instance(self, job):
-        for job.visit in xrange(job.visits):
-            ut.create_dir(job.path)
-            wl_log.info("*** Visit #%s to %s ***", job.visit, job.url)
+    def __do_instance(self):
+        for self.job.visit in xrange(self.job.visits):
+            ut.create_dir(self.job.path)
+            wl_log.info("*** Visit #%s to %s ***", self.job.visit, self.job.url)
             with self.driver.launch():
                 try:
                     self.driver.set_page_load_timeout(cm.SOFT_VISIT_TIMEOUT)
                 except WebDriverException as seto_exc:
                     wl_log.error("Setting soft timeout %s", seto_exc)
-                self.__do_visit(job)
+                self.__do_visit()
                 if self.screenshots:
                     try:
-                        self.driver.get_screenshot_as_file(job.png_file)
+                        self.driver.get_screenshot_as_file(self.job.png_file)
                     except WebDriverException:
                         wl_log.error("Cannot get screenshot.")
-            sleep(PAUSE_BETWEEN_VISITS)
-            self.post_visit(job)
+            sleep(self.job.pause_between_visits)
+            self.post_visit()
 
-    def __do_visit(self, job):
-        with Sniffer(path=job.pcap_file, filter=cm.DEFAULT_FILTER):
+    def __do_visit(self):
+        with Sniffer(path=self.job.pcap_file, filter=cm.DEFAULT_FILTER):
             sleep(1)  # make sure dumpcap is running
             try:
-                with ut.timeout(cm.HARD_VISIT_TIMEOUT):
-                    self.driver.get(job.url)
-                    sleep(PAUSE_IN_SITE)
+                with ut.timeout(self.job.hard_visit_timeout):
+                    self.driver.get(self.job.url)
+                    sleep(self.job.pause_in_site)
             except (ut.HardTimeoutException, TimeoutException):
-                wl_log.error("Visit to %s has timed out!", job.url)
+                wl_log.error("Visit to %s has timed out!", self.job.url)
             except Exception as exc:
-                wl_log.error("Unknown %s exception: %s", exc.type, exc)
+                wl_log.error("Unknown exception: %s", exc)
 
 
 class CrawlerWebFP(CrawlerBase):
-    def post_visit(self, job):
+    def post_visit(self):
         guard_ips = set([ip for ip in self.controller.get_all_guard_ips()])
         wl_log.debug("Found %s guards in the consensus.", len(guard_ips))
         wl_log.info("Filtering packets without a guard IP.")
         try:
-            ut.filter_pcap(job.pcap_file, guard_ips, strip=True)
+            ut.filter_pcap(self.job.pcap_file, guard_ips, strip=True)
         except Exception as e:
             wl_log.error("ERROR: filtering pcap file: %s.", e)
-            wl_log.error("Check pcap: %s", job.pcap_file)
+            wl_log.error("Check pcap: %s", self.job.pcap_file)
 
 
 class CrawlerMultitab(CrawlerWebFP):
@@ -96,10 +93,11 @@ class CrawlerMultitab(CrawlerWebFP):
 
 
 class CrawlJob(object):
-    def __init__(self, batches, urls, visits):
+    def __init__(self, config, urls):
         self.urls = urls
-        self.visits = visits
-        self.batches = batches
+        self.visits = int(config['visits'])
+        self.batches = int(config['batches'])
+        self.config = config
 
         # state
         self.site = 0

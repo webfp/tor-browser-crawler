@@ -3,18 +3,6 @@ from os.path import join, dirname, abspath, pardir
 from time import strftime
 
 
-def parse_config(fname):
-    config_dict = {}
-    with open(fname) as f:
-        for line in f:
-            if line.startswith('#') or line.startswith('\n'):
-                continue
-            option, args = line.rstrip().split(" ", 1)
-            args = args.split("#", 1)[0]
-            config_dict.update({option: args})
-    return config_dict
-
-
 env_vars = os.environ
 # whether we're running on Travis CI or not
 running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
@@ -68,6 +56,3 @@ VBOX_GATEWAY_IP = "10.0.2.2"  # default gateway IP of VirtualBox
 LXC_GATEWAY_IP = "10.0.3.1"  # default gateway IP of LXC
 LOCALHOST_IP = "127.0.0.1"  # default localhost IP
 DEFAULT_FILTER = 'tcp and not host %s and not tcp port 22 and not tcp port 20' % LOCALHOST_IP
-
-TORRC = parse_config(TORRC_FILE)
-FFPREFS = parse_config(FFPREF_FILE)

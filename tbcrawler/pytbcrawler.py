@@ -1,4 +1,5 @@
 import argparse
+import ConfigParser
 import sys
 import traceback
 from contextlib import contextmanager
@@ -23,7 +24,7 @@ def run():
     build_crawl_dirs()
 
     # Parse arguments
-    args = parse_arguments()
+    args, config = parse_arguments()
 
     # Read URLs
     url_list = read_list_urls(args.url_file, args.start, args.stop)
@@ -32,18 +33,18 @@ def run():
     add_log_file_handler(wl_log, cm.DEFAULT_CRAWL_LOG)
 
     # Configure controller
+    torrc_config = ut.get_dict_subconfig(config, args.config, "torrc")
     controller = TorController(cm.TBB_DIR,
-                               torrc_dict=cm.TORRC,
+                               torrc_dict=torrc_config,
                                pollute=False)
 
     # Configure browser
     TorBrowserDriver.add_exceptions(url_list)
-    socks_port = int(cm.TORRC['SocksPort']) \
-        if 'SocksPort' in cm.TORRC else cm.DEFAULT_SOCKS_PORT
+    ffprefs = ut.get_dict_subconfig(config, args.config, "ffpref")
     driver = TorBrowserWrapper(cm.TBB_DIR,
                                tbb_logfile_path=cm.DEFAULT_FF_LOG,
-                               pref_dict=cm.FFPREFS,
-                               socks_port=socks_port,
+                               pref_dict=ffprefs,
+                               socks_port=int(torrc_config['socksport']),
                                virt_display=args.virtual_display,
                                pollute=False)
 
@@ -52,7 +53,8 @@ def run():
     crawler = crawl_type(driver, controller, args.screenshots)
 
     # Configure crawl
-    job = crawler_mod.CrawlJob(args.batches, url_list, args.visits)
+    job_config = ut.get_dict_subconfig(config, args.config, "job")
+    job = crawler_mod.CrawlJob(job_config, url_list)
 
     # Run the crawl
     chdir(cm.CRAWL_DIR)
@@ -81,8 +83,7 @@ def build_crawl_dirs():
     ut.create_dir(cm.RESULTS_DIR)
     ut.create_dir(cm.CRAWL_DIR)
     ut.create_dir(cm.LOGS_DIR)
-    copyfile(cm.TORRC_FILE, join(cm.LOGS_DIR, 'torrc'))
-    copyfile(cm.FFPREF_FILE, join(cm.LOGS_DIR, 'ffprefs'))
+    copyfile(cm.CONFIG_FILE, join(cm.LOGS_DIR, 'config.ini'))
     add_symlink(join(cm.RESULTS_DIR, 'latest_crawl'), cm.CRAWL_DIR)
 
 
@@ -102,6 +103,10 @@ def read_list_urls(file_path, start, stop):
 
 
 def parse_arguments():
+    # Read configuration file
+    config = ConfigParser.RawConfigParser()
+    config.read(cm.CONFIG_FILE)
+
     # Parse arguments
     parser = argparse.ArgumentParser(description='Crawl a list of URLs in multiple batches.')
 
@@ -116,6 +121,10 @@ def parse_arguments():
     parser.add_argument('-o', '--output',
                         help='Directory to dump the results (default=./results).',
                         default=cm.CRAWL_DIR)
+    parser.add_argument('-c', '--config',
+                        help="Crawler tor driver and controller configurations.",
+                        choices=config.sections(),
+                        default="default")
     parser.add_argument('-b', '--tbb-path',
                         help="Path to the Tor Browser Bundle directory.",
                         default=cm.TBB_DIR)
@@ -123,19 +132,11 @@ def parse_arguments():
                         help='increase output verbosity',
                         default=False)
 
-    # For understanding batch and visit parameters please refer
-    # to Wang and Goldberg's WPES'13 paper, Section 4.1.4
-    parser.add_argument('--batches', type=int,
-                        help='Number of batches in the crawl (default: %s)' % cm.NUM_BATCHES,
-                        default=cm.NUM_BATCHES)
-    parser.add_argument('--visits', type=int,
-                        help='Number of visits to a page for each crawl (default: %s)' % cm.NUM_INSTANCES,
-                        default=cm.NUM_INSTANCES)
     # Crawler features
     parser.add_argument('-x', '--virtual-display',
                         help='Dimensions of the virtual display, eg 1200x800',
                         default='')
-    parser.add_argument('-c', '--screenshots', action='store_true',
+    parser.add_argument('-s', '--screenshots', action='store_true',
                         help='Capture page screenshots',
                         default=False)
 
@@ -159,7 +160,7 @@ def parse_arguments():
     del args.output
 
     wl_log.debug("Command line parameters: %s" % argv)
-    return args
+    return args, config
 
 
 class TorBrowserWrapper(object):
