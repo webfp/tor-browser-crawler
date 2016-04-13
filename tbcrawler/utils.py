@@ -7,6 +7,7 @@ from shutil import copyfile
 from time import strftime
 from urllib2 import urlopen
 
+
 import psutil
 from scapy.all import *
 
@@ -168,3 +169,6 @@ def filter_pcap(pcap_path, iplist, strip=False, clean=True):
     wrpcap(pcap_path, pcap_filtered)
     remove(orig_pcap)
 
+
+class TimeoutException(Exception):
+    pass

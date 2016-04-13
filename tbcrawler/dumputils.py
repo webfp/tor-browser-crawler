@@ -56,7 +56,7 @@ class Sniffer(object):
             time.sleep(0.1)
             timeout -= 0.1
         if timeout < 0:
-            raise cm.DumpcapTimeoutError()
+            raise DumpcapTimeoutError()
         else:
             wl_log.debug("dumpcap started in %s seconds" %
                          (DUMPCAP_START_TIMEOUT - timeout))
@@ -87,3 +87,8 @@ class Sniffer(object):
 
     def __exit__(self, type, value, traceback):
         self.stop_capture()
+
+
+class DumpcapTimeoutError(Exception):
+    pass
+
