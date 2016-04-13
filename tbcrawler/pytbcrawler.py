@@ -10,6 +10,7 @@ from shutil import copyfile
 from sys import maxsize, argv
 
 from tbselenium.tbdriver import TorBrowserDriver
+from tbselenium.common import USE_RUNNING_TOR
 
 import common as cm
 import utils as ut
@@ -42,6 +43,7 @@ def run():
     ffprefs = ut.get_dict_subconfig(config, args.config, "ffpref")
     driver = TorBrowserWrapper(cm.TBB_DIR,
                                tbb_logfile_path=cm.DEFAULT_FF_LOG,
+                               tor_cfg=USE_RUNNING_TOR,
                                pref_dict=ffprefs,
                                socks_port=int(torrc_config['socksport']),
                                virt_display=args.virtual_display,
