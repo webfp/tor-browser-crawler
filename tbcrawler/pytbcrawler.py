@@ -8,6 +8,7 @@ from os import stat, chdir
 from os.path import isfile, join
 from shutil import copyfile
 from sys import maxsize, argv
+from urlparse import urlparse
 
 from tbselenium.tbdriver import TorBrowserDriver
 from tbselenium.common import USE_RUNNING_TOR
@@ -15,6 +16,7 @@ from tbselenium.common import USE_RUNNING_TOR
 import common as cm
 import utils as ut
 import crawler as crawler_mod
+from xvfb import start_xvfb, stop_xvfb
 from log import add_log_file_handler
 from log import wl_log, add_symlink
 from torcontroller import TorController
@@ -29,6 +31,7 @@ def run():
 
     # Read URLs
     url_list = read_list_urls(args.url_file, args.start, args.stop)
+    host_list = [urlparse(url).hostname for url in url_list]
 
     # Configure logger
     add_log_file_handler(wl_log, cm.DEFAULT_CRAWL_LOG)
@@ -46,8 +49,7 @@ def run():
                                tor_cfg=USE_RUNNING_TOR,
                                pref_dict=ffprefs,
                                socks_port=int(torrc_config['socksport']),
-                               virt_display=args.virtual_display,
-                               canvas_exceptions=url_list)
+                               canvas_allowed_hosts=host_list)
 
     # Instantiate crawler
     crawl_type = getattr(crawler_mod, "Crawler" + args.type)
@@ -57,6 +59,9 @@ def run():
     job_config = ut.get_dict_subconfig(config, args.config, "job")
     job = crawler_mod.CrawlJob(job_config, url_list)
 
+    # Run display
+    xvfb_display = setup_virtual_display(args.virtual_display)
+
     # Run the crawl
     chdir(cm.CRAWL_DIR)
     try:
@@ -64,13 +69,23 @@ def run():
     except KeyboardInterrupt:
         wl_log.warning("Keyboard interrupt! Quitting...")
         sys.exit(-1)
+    finally:
+        # Post crawl
+        post_crawl()
 
-    # Post crawl
-    post_crawl()
+        # Close display
+        stop_xvfb(xvfb_display)
 
     # die
     sys.exit(0)
 
+def setup_virtual_display(virt_display):
+    """Start a virtual display with the given dimensions (if requested)."""
+    if virt_display:
+        w, h = (int(dim) for dim in virt_display.lower().split("x"))
+        return start_xvfb(w, h)
+    else:
+        return start_xvfb()
 
 def post_crawl():
     """Operations after the crawl."""

@@ -7,7 +7,6 @@ import stem.process
 from stem.control import Controller
 from stem.util import term
 from tbselenium.common import DEFAULT_TOR_DATA_PATH, DEFAULT_TOR_BINARY_PATH
-from tbselenium.utils import clone_dir_temporary
 
 import common as cm
 import utils as ut
@@ -79,7 +78,7 @@ class TorController(object):
     def launch_tor_service(self):
         """Launch Tor service and return the process."""
         if self.pollute:
-            self.tmp_tor_data_dir = clone_dir_temporary(self.tor_data_path)
+            self.tmp_tor_data_dir = ut.clone_dir_temporary(self.tor_data_path)
             self.torrc_dict.update({'DataDirectory': self.tmp_tor_data_dir})
 
         print("Tor config: %s" % self.torrc_dict)

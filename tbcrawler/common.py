@@ -29,8 +29,13 @@ DEFAULT_SOCKS_PORT = 9051
 CRAWLER_TYPES = ['Base', 'WebFP', 'Multitab']
 
 # virtual display dimensions
-XVFB_W = 1280
-XVFB_H = 720
+DEFAULT_XVFB_WIN_W = 1280
+DEFAULT_XVFB_WIN_H = 800
+# virt_display is a string in the form of WxH
+# W = width of the virtual display
+# H = height of the virtual display
+# e.g. "1280x800" or "800x600"
+DEFAULT_XVFB_WINDOW_SIZE = "%sx%s" % (DEFAULT_XVFB_WIN_W, DEFAULT_XVFB_WIN_H)
 
 # Default paths
 BASE_DIR = abspath(join(dirname(__file__), pardir))
