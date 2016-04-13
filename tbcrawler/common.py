@@ -60,3 +60,7 @@ DEFAULT_FILTER = 'tcp and not host %s and not tcp port 22 and not tcp port 20' %
 
 class DumpcapTimeoutError(Exception):
     pass
+
+
+class TimeoutException(Exception):
+    pass
