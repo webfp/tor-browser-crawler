@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+import psutil
 
 import common as cm
 import utils as ut
@@ -64,6 +65,8 @@ class Sniffer(object):
         self.is_recording = True
 
     def is_dumpcap_running(self):
+        if "dumpcap" in psutil.Process(self.p0.pid).cmdline():
+            return self.p0.returncode is None
         for proc in ut.gen_all_children_procs(self.p0.pid):
             if "dumpcap" in proc.cmdline():
                 return True
