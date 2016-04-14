@@ -33,6 +33,14 @@ def create_dir(dir_path):
     return dir_path
 
 
+def clone_dir_temporary(dir_path):
+    """Makes a temporary copy of a directory."""
+    import tempfile
+    tempdir = tempfile.mkdtemp()
+    du.copy_tree(dir_path, tempdir)
+    return tempdir
+
+
 def append_timestamp(_str=''):
     """Append a timestamp to a string and return it."""
     return _str + strftime('%y%m%d_%H%M%S')
