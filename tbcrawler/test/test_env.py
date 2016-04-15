@@ -3,7 +3,6 @@ import os
 import unittest
 
 from tbcrawler import common as cm
-from tbcrawler.common import get_recommended_tbb_version
 
 
 class Test(unittest.TestCase):
@@ -49,17 +48,10 @@ class Test(unittest.TestCase):
         self.assertTrue(os.path.isdir(cm.BASE_DIR),
                         'Cannot find base dir path %s' % cm.BASE_DIR)
 
-    def test_tb_bin_path(self):
-        tb_bin_path = cm.get_tb_bin_path(version=get_recommended_tbb_version())
-        self.assertTrue(os.path.isfile(tb_bin_path),
-                        'Cannot find Tor Browser binary path %s'
-                        % tb_bin_path)
-
-    def test_tbb_profile_path(self):
-        tbb_profile_path = cm.get_tbb_profile_path(version=get_recommended_tbb_version())
-        self.assertTrue(os.path.isdir(tbb_profile_path),
-                        'Cannot find Tor Browser profile dir %s'
-                        % tbb_profile_path)
+    def test_tbb_dir(self):
+        self.assertTrue(os.path.isdir(cm.TBB_DIR),
+                        'Cannot find Tor Browser Bundle dir %s'
+                        % cm.TBB_DIR)
 
     def test_selenium(self):
         self.assert_py_pkg_installed('selenium')

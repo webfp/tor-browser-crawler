@@ -140,7 +140,7 @@ def parse_arguments():
     parser.add_argument('-c', '--config',
                         help="Crawler tor driver and controller configurations.",
                         choices=config.sections(),
-                        default="DEFAULT")
+                        default="default")
     parser.add_argument('-b', '--tbb-path',
                         help="Path to the Tor Browser Bundle directory.",
                         default=cm.TBB_DIR)

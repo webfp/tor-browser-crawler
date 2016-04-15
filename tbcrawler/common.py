@@ -63,4 +63,11 @@ LOCALHOST_IP = "127.0.0.1"  # default localhost IP
 DEFAULT_FILTER = 'tcp and not host %s and not tcp port 22 and not tcp port 20' % LOCALHOST_IP
 
 
+class TimeoutException(Exception):
+    pass
+
+
+class HardTimeoutException(Exception):
+    pass
+
 

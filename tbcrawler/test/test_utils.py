@@ -1,79 +1,91 @@
-import commands as cmds
-import os
-import sys
+import subprocess
+import tempfile
 import unittest
+from ConfigParser import RawConfigParser
+from os.path import isdir
+from shutil import rmtree
 from time import sleep
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from tbcrawler import utils as ut
-import tbcrawler.common as cm
-from shutil import rmtree
-from tld import get_tld
+from tbcrawler.common import CONFIG_FILE
 
 
-class UtilsTest(unittest.TestCase):
-
-    def test_get_filename_from_url(self):
-        filename = ut.get_filename_from_url("http://google.com", 0)
-        self.assertEqual("0-google.com", filename)
-        filename = ut.get_filename_from_url("https://yahoo.com", 99)
-        self.assertEqual("99-yahoo.com", filename)
-        filename = ut.get_filename_from_url("https://123abc.com/somepath", 999)
-        self.assertEqual("999-123abc.com-somepath", filename)
-        filename = ut.get_filename_from_url(
-            "https://123abc.com/somepath/", 123)
-        self.assertEqual("123-123abc.com-somepath-", filename)
-        filename = ut.get_filename_from_url(
-            "https://123abc.com/somepath/q=query&q2=q2", 234)
-        self.assertEqual("234-123abc.com-somepath-q-query-q2-q2", filename)
-
+class TimeoutTest(unittest.TestCase):
     def test_timeout(self):
-        ut.timeout(1)
         try:
-            sleep(1.1)
-        except ut.TimeExceededError:
-            pass  # this is what we want
+            with ut.timeout(1):
+                sleep(1.1)
+        except ut.TimeoutException:
+            pass  # test passes
         else:
             self.fail("Cannot set timeout")
 
     def test_cancel_timeout(self):
-        ut.timeout(1)
-        ut.cancel_timeout()
         try:
-            sleep(1.1)
-        except ut.TimeExceededError:
+            with ut.timeout(1):
+                sleep(0.9)
+        except ut.TimeoutException:
             self.fail("Cannot cancel timeout")
+        else:
+            pass  # test passes
 
-    def test_pack_crawl_data(self):
-        self.assertTrue(ut.pack_crawl_data(cm.DUMMY_TEST_DIR))
-        self.assertTrue(os.path.isfile(cm.DUMMY_TEST_DIR_TARGZIPPED))
 
-        cmd = 'file "%s"' % cm.DUMMY_TEST_DIR_TARGZIPPED  # linux file command
-        status, cmd_out = cmds.getstatusoutput(cmd)
-        if not status:  # command executed successfully
-            if 'gzip compressed data' not in cmd_out:
-                self.fail("Cannot confirm file type")
+class DirectoryUtilsTests(unittest.TestCase):
 
-        self.failIf(ut.is_targz_archive_corrupt(cm.DUMMY_TEST_DIR_TARGZIPPED))
-        os.remove(cm.DUMMY_TEST_DIR_TARGZIPPED)
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp()
 
-    def test_get_public_suffix(self):
-        urls = ('http://www.foo.org',
-                'https://www.foo.org',
-                'http://www.subdomain.foo.org',
-                'http://www.subdomain.foo.org:80/subfolder',
-                'https://www.subdomain.foo.org:80/subfolder?p1=4545&p2=54545',
-                'https://www.subdomain.foo.org:80/subfolder/baefasd==/65')
-        for pub_suf_test_url in urls:
-            self.assertEqual(get_tld(pub_suf_test_url),
-                             "foo.org")
+    def tearDown(self):
+        if isdir(self.tempdir):
+            rmtree(self.tempdir)
 
-    def test_extract_archive(self):
-        ut.extract_tbb_tarball(cm.TBB_TEST_TARBALL)
-        self.assertTrue(os.path.isdir(cm.TBB_TEST_TARBALL_EXTRACTED))
-        self.assertTrue(os.path.isfile(
-            os.path.join(cm.TBB_TEST_TARBALL_EXTRACTED, "dummy.txt")))
-        rmtree(cm.TBB_TEST_TARBALL_EXTRACTED)
+    def test_create_non_existing(self):
+        self.tempdir = tempfile.mkdtemp()
+        rmtree(self.tempdir)
+        try:
+            ut.create_dir(self.tempdir)
+        except:
+            self.fail("shouldn't raise")
+
+    def test_create_existing(self):
+        try:
+            ut.create_dir(self.tempdir)
+        except:
+            self.fail("shouldn't raise")
+
+    def test_clone_dir_temporary(self):
+        tmpdir = ut.clone_dir_temporary(self.tempdir)
+        self.assertTrue(isdir(tmpdir))
+
+
+class ProcessUtilsTests(unittest.TestCase):
+    # only linux!
+    def test_gen_all_children_procs_of_non_shell_parent(self):
+        parent = subprocess.Popen(['/bin/sleep', '1'])
+        children = len(list(ut.gen_all_children_procs(parent.pid)))
+        self.assertEqual(children, 0)
+
+    def test_gen_all_children_procs_of_shell(self):
+        parent = subprocess.Popen('/bin/sleep 1', shell=True)
+        children = len(list(ut.gen_all_children_procs(parent.pid)))
+        self.assertEqual(children, 1)
+
+    def test_kill_all_children(self):
+        parent = subprocess.Popen('/bin/sleep 1', shell=True)
+        ut.kill_all_children(parent.pid)
+        children = len(list(ut.gen_all_children_procs(parent.pid)))
+        self.assertEqual(children, 0)
+
+
+class ConfigUtilsTests(unittest.TestCase):
+    def test_get_dict_subconfig(self):
+        config = RawConfigParser()
+        config.read(CONFIG_FILE)
+        d = ut.get_dict_subconfig(config, 'default', 'torrc')
+        self.assertDictEqual(d, {'controlport': '9051',
+                                 'socksport': '9050',
+                                 'socksbindaddress': '127.0.0.1'})
+
 
 if __name__ == "__main__":
     unittest.main()
