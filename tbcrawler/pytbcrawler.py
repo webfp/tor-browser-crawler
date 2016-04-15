@@ -16,7 +16,6 @@ from tbselenium.common import USE_RUNNING_TOR
 import common as cm
 import utils as ut
 import crawler as crawler_mod
-from xvfb import start_xvfb, stop_xvfb
 from log import add_log_file_handler
 from log import wl_log, add_symlink
 from torcontroller import TorController
@@ -74,7 +73,7 @@ def run():
         post_crawl()
 
         # Close display
-        stop_xvfb(xvfb_display)
+        ut.stop_xvfb(xvfb_display)
 
     # die
     sys.exit(0)
@@ -83,9 +82,9 @@ def setup_virtual_display(virt_display):
     """Start a virtual display with the given dimensions (if requested)."""
     if virt_display:
         w, h = (int(dim) for dim in virt_display.lower().split("x"))
-        return start_xvfb(w, h)
+        return ut.start_xvfb(w, h)
     else:
-        return start_xvfb()
+        return ut.start_xvfb()
 
 def post_crawl():
     """Operations after the crawl."""

@@ -1,15 +1,45 @@
 sudo: required
 language: python
-python:
-  - "2.7"
+os: linux
+dist: trusty
+env:
+  matrix:
+    - TRAVIS_EXTRA_JOB_WORKAROUND=true
+matrix:
+  include:
+    - python: "2.7"
+      env: VERSION_ARCH='4.0.8/tor-browser-linux64-4.0.8_en-US.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_zh-CN.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_ar.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='6.0a4/tor-browser-linux64-6.0a4_en-US.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='6.0a4/tor-browser-linux64-6.0a4_zh-CN.tar.xz'
+    - python: "2.7"
+      env: VERSION_ARCH='6.0a4/tor-browser-linux64-6.0a4_ar.tar.xz'
+    - python: "3.4"
+      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
+    - python: "3.5"
+      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
+  exclude:
+    - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 install:
-  - sudo apt-get -qq install xvfb tcpdump wireshark
+  - pip install pytest-cov
   - pip install -r requirements.txt
-  - python setup.py
+  - sudo apt-get -qq install tor
+  - easy_install .
+  - tarball=`echo $VERSION_ARCH | cut -d'/' -f 2`
+  - wget https://archive.torproject.org/tor-package-archive/torbrowser/$VERSION_ARCH
+  - tar -xf $tarball -C $HOME
+  - locale=`echo $tarball | cut -d'_' -f 2 | cut -d'.' -f 1`
+  - export TBB_PATH=$HOME/tor-browser_$locale
 before_script:
-  - cd tbcrawler/test
-script:  py.test -k 'not test_dumputils.py'
-
+  - cd tbscrawler/test
+script: travis_retry py.test -s --cov=tbcrawler --cov-report term-missing --durations=10

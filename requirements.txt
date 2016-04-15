@@ -1,8 +1,5 @@
-requests
 stem
 psutil>=2.2.1
-scapy
 pyvirtualdisplay
 selenium>=2.45.0
-tld
 -e git+https://github.com/webfp/tor-browser-selenium.git#egg=tbselenium-1.0
