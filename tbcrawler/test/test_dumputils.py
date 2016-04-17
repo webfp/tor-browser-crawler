@@ -56,11 +56,10 @@ class SnifferTest(unittest.TestCase):
         self.assertTrue(f)
         self.snf.stop_capture()
         # TODO investigate why the we cannot capture on CI
-        if not cm.running_in_CI:
-            self.assertTrue(os.path.isfile(TEST_PCAP_PATH),
-                            "Cannot find pcap file")
-            self.assertGreater(os.path.getsize(TEST_PCAP_PATH), 0)
-            os.remove(TEST_PCAP_PATH)
+        self.assertTrue(os.path.isfile(TEST_PCAP_PATH),
+                        "Cannot find pcap file")
+        self.assertGreater(os.path.getsize(TEST_PCAP_PATH), 0)
+        os.remove(TEST_PCAP_PATH)
 
 if __name__ == "__main__":
     unittest.main()
