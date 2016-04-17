@@ -25,8 +25,7 @@ before_install:
 install:
   - pip install pytest-cov
   - pip install -r requirements.txt
-  - sudo apt-get -qq install tcpdump wireshark
-  - sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap
+  - sudo apt-get -qq install tcpdump libpcap-dev
   - tarball=`echo $VERSION_ARCH | cut -d'/' -f 2`
   - wget https://archive.torproject.org/tor-package-archive/torbrowser/$VERSION_ARCH
   - tar -xf $tarball
