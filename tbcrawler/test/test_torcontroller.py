@@ -31,12 +31,12 @@ class RunDriverWithControllerTest(unittest.TestCase):
 class TorControllerTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tor_controller = TorController(cm.TBB_PATH)
+        cls.tor_controller = TorController(cm.TBB_DIR)
         cls.tor_process = cls.tor_controller.launch_tor_service()
 
     def test_close_all_streams(self):
         streams_open = False
-        new_tb_drv = TorBrowserDriver(cm.TBB_PATH)
+        new_tb_drv = TorBrowserDriver(cm.TBB_DIR)
         new_tb_drv.get('http://www.google.com')
         time.sleep(30)
         self.tor_controller.close_all_streams()
