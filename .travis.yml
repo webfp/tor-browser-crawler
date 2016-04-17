@@ -25,7 +25,7 @@ before_install:
 install:
   - pip install pytest-cov
   - pip install -r requirements.txt
-  - sudo apt-get -qq install tcpdump libpcap-dev
+  - sudo apt-get -qq install tcpdump libpcap-dev tshark
   - tarball=`echo $VERSION_ARCH | cut -d'/' -f 2`
   - wget https://archive.torproject.org/tor-package-archive/torbrowser/$VERSION_ARCH
   - tar -xf $tarball
