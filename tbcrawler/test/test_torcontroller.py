@@ -16,11 +16,11 @@ class RunDriverWithControllerTest(unittest.TestCase):
     def test_run_driver_with_controller(self):
         # run controller on port N
         custom_socks_port = 6666
-        self.tor_controller = TorController(cm.TBB_PATH, torrc_dict={'SocksPort': str(custom_socks_port)})
+        self.tor_controller = TorController(cm.TBB_DIR, torrc_dict={'SocksPort': str(custom_socks_port)})
         self.tor_process = self.tor_controller.launch_tor_service()
 
         # set driver and get a page
-        self.tor_driver = TorBrowserDriver(cm.TBB_PATH, socks_port=custom_socks_port)
+        self.tor_driver = TorBrowserDriver(cm.TBB_DIR, socks_port=custom_socks_port)
         self.tor_driver.get("http://google.com")
 
         # shutdown
