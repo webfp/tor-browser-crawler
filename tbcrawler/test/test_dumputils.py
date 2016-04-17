@@ -20,7 +20,7 @@ class SnifferTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @pytest.mark.skipif(bool(os.getenv('CI', False)) == True, reason="Only run in CI")
+    @pytest.mark.skipif(bool(os.getenv('CI', False)), reason='Skip in CI')
     def test_is_dumpcap_running(self):
         self.snf.set_pcap_path(TEST_PCAP_PATH)
         self.snf.start_capture()
@@ -47,7 +47,7 @@ class SnifferTest(unittest.TestCase):
                         "Sniffer filter cannot be set %s %s"
                         % (TEST_CAP_FILTER, self.snf.get_capture_filter()))
 
-    @pytest.mark.skipif(bool(os.getenv('CI', False)) == True, reason="Only run in CI")
+    @pytest.mark.skipif(bool(os.getenv('CI', False)), reason='Skip in CI')
     def test_start_capture(self):
         if os.path.isfile(TEST_PCAP_PATH):
             os.remove(TEST_PCAP_PATH)

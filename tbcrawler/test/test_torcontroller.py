@@ -25,7 +25,7 @@ class RunDriverWithControllerTest(unittest.TestCase):
 
         # shutdown
         self.tor_driver.quit()
-        self.tor_controller.kill_tor_proc()
+        self.tor_controller.quit()
 
 
 class TorControllerTest(unittest.TestCase):
@@ -36,7 +36,7 @@ class TorControllerTest(unittest.TestCase):
 
     def test_close_all_streams(self):
         streams_open = False
-        new_tb_drv = TorBrowserDriver(cm.TBB_DIR)
+        new_tb_drv = TorBrowserDriver(cm.TBB_DIR, tbb_logfile_path='test.log')
         new_tb_drv.get('http://www.google.com')
         time.sleep(30)
         self.tor_controller.close_all_streams()
@@ -48,7 +48,7 @@ class TorControllerTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.tor_controller.kill_tor_proc()
+        cls.tor_controller.quit()
 
 
 if __name__ == "__main__":
