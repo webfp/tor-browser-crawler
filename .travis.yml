@@ -29,8 +29,8 @@ install:
   - sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' /usr/bin/dumpcap
   - tarball=`echo $VERSION_ARCH | cut -d'/' -f 2`
   - wget https://archive.torproject.org/tor-package-archive/torbrowser/$VERSION_ARCH
-  - tar -xf $tarball -C ${HOME}/tor-browser-crawler 
-  - export TBB_PATH=${HOME}/tor-browser-crawler/tor-browser_en-US
+  - tar -xf $tarball
+  - export TBB_PATH=`pwd`/tor-browser_en-US
 before_script:
   - cd tbcrawler/test
 script: travis_retry py.test -s --cov=tbcrawler --cov-report term-missing --durations=10
