@@ -3,10 +3,6 @@ from os.path import join, dirname, abspath, pardir
 from time import strftime
 
 
-env_vars = os.environ
-# whether we're running on Travis CI or not
-running_in_CI = "CONTINUOUS_INTEGRATION" in env_vars and "TRAVIS" in env_vars
-
 # defaults for batch and instance numbers
 NUM_BATCHES = 10
 NUM_INSTANCES = 4
