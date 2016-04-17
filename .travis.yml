@@ -13,10 +13,10 @@ matrix:
       env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
     - python: "2.7"
       env: VERSION_ARCH='6.0a4/tor-browser-linux64-6.0a4_en-US.tar.xz'
-    - python: "3.4"
-      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
-    - python: "3.5"
-      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
+#    - python: "3.4"
+#      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
+#    - python: "3.5"
+#      env: VERSION_ARCH='5.5.4/tor-browser-linux64-5.5.4_en-US.tar.xz'
   exclude:
     - env: TRAVIS_EXTRA_JOB_WORKAROUND=true
 before_install:
