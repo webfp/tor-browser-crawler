@@ -36,13 +36,11 @@ class Test(unittest.TestCase):
         self.assert_py_pkg_installed('psutil')
 
     def test_xvfbwrapper(self):
-        self.assert_py_pkg_installed('xvfbwrapper')
+        self.assert_py_pkg_installed('pyvirtualdisplay')
 
     def test_argparse(self):
         self.assert_py_pkg_installed('argparse')
 
-    def test_requests(self):
-        self.assert_py_pkg_installed('requests')
 
     def test_webfp_path(self):
         self.assertTrue(os.path.isdir(cm.BASE_DIR),
