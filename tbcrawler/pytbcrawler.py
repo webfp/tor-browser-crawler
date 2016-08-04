@@ -29,7 +29,7 @@ def run():
     args, config = parse_arguments()
 
     # Read URLs
-    url_list = read_list_urls(args.url_file, args.start, args.stop)
+    url_list = parse_url_list(args.url_file, args.start, args.stop)
     host_list = [urlparse(url).hostname for url in url_list]
 
     # Configure logger
@@ -102,10 +102,8 @@ def build_crawl_dirs():
     add_symlink(join(cm.RESULTS_DIR, 'latest_crawl'), cm.CRAWL_DIR)
 
 
-def read_list_urls(file_path, start, stop):
+def parse_url_list(file_path, start, stop):
     """Return list of urls from a file."""
-    assert isfile(file_path)  # URL file does not exist
-    assert not stat(file_path).st_size == 0  # URL file is empty
     url_list = []
     try:
         with open(file_path) as f:
