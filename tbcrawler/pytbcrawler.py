@@ -5,7 +5,7 @@ import traceback
 from contextlib import contextmanager
 from logging import INFO, DEBUG
 from os import stat, chdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 from shutil import copyfile
 from sys import maxsize, argv
 from urlparse import urlparse
@@ -99,7 +99,7 @@ def build_crawl_dirs():
     ut.create_dir(cm.CRAWL_DIR)
     ut.create_dir(cm.LOGS_DIR)
     copyfile(cm.CONFIG_FILE, join(cm.LOGS_DIR, 'config.ini'))
-    add_symlink(join(cm.RESULTS_DIR, 'latest_crawl'), cm.CRAWL_DIR)
+    add_symlink(join(cm.RESULTS_DIR, 'latest_crawl'), basename(cm.CRAWL_DIR))
 
 
 def parse_url_list(file_path, start, stop):
