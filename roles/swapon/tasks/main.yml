@@ -1,33 +1,33 @@
-- name: Create swap file.
-  command: fallocate -l {{ (ansible_memtotal_mb / 1000 / 2)|round(0, 'ceil')|int }}G /swapfile
-           creates=/swapfile
-  become: yes
-  when: ansible_swaptotal_mb < 1
-  register: swapfile_created
+- block:
+    - name: Create swap file.
+      command:
+        fallocate -l {{ (ansible_memtotal_mb / 1000 / 2)|round(0, 'ceil')|int }}G /swapfile
+        creates=/swapfile
+      when: ansible_swaptotal_mb < 1
+      register: swapfile_created
 
-- name: Set swapfile permissions.
-  file: path=/swapfile
+    - name: Set swapfile permissions.
+      file:
+        path=/swapfile
         mode=0600
-  become: yes
-  when: swapfile_created.changed
+      when: swapfile_created.changed
 
-- name: Format swapfile as swap.
-  command: mkswap /swapfile
-  become: yes
-  when: swapfile_created.changed
+    - name: Format swapfile as swap.
+      command: mkswap /swapfile
+      when: swapfile_created.changed
 
-- name: Add swap to fstab.
-  mount: name=swapfile
-         src=/swapfile
-         fstype=swap
-         opts=sw
-         passno=0
-         dump=0
-         state=present
-  become: yes
-  when: swapfile_created.changed
+    - name: Add swap to fstab.
+      mount:
+        name=swapfile
+        src=/swapfile
+        fstype=swap
+        opts=sw
+        passno=0
+        dump=0
+        state=present
+      when: swapfile_created.changed
 
-- name: Enable swap.
-  command: swapon /swapfile
+    - name: Enable swap.
+      command: swapon /swapfile
+      when: swapfile_created.changed
   become: yes
-  when: swapfile_created.changed
