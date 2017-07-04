@@ -1,8 +1,10 @@
 import signal
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
+from shutil import copyfile
 from os import makedirs
 from os.path import exists
+from scapy.all import PcapReader, wrpcap
 
 import psutil
 from pyvirtualdisplay import Display
@@ -57,6 +59,52 @@ def timeout(seconds):
         yield
     finally:
         signal.alarm(0)
+
+
+def filter_tshark(tshark_path, iplist):                                          
+    # Remove lines in log for IPs that are not in iplist                         
+    orig_tshark = tshark_path + ".original"                                      
+    move(tshark_path, orig_tshark)                                               
+    tao_trace = tshark_path[:-6] + 'tao'                                         
+    with open(tshark_path, 'wb') as fo, open(tao_trace, 'wb') as ft:             
+        for line in open(orig_tshark):                                           
+            s_line = line.strip().split(',')                                     
+            ts = s_line[0]                                                       
+            src, dst = s_line[1:3]                                               
+            proto, ip_len, ip_hdr_len, tcp_hdr_len = s_line[5:9]                 
+            msg = s_line[14]                                                     
+            if proto != '6':                                                     
+                continue                                                         
+            datalen = int(ip_len) - (int(ip_hdr_len) + int(tcp_hdr_len))         
+            if datalen == 0:                                                     
+                continue                                                         
+            if src not in iplist and dst not in iplist:                          
+                continue                                                         
+            fo.write(line)                                                       
+            if src != cm.LOCAL_IP:                                               
+                datalen = -datalen                                               
+            if 'retransmission' in msg.lower():                                  
+                continue                                                         
+            ft.write('\t'.join([ts, str(datalen)]) + '\n')                       
+                                                                                 
+                                                                                 
+def filter_pcap(pcap_path, iplist):                                              
+    # TODO: parse pcap into a CSV with the following fields:                     
+    # length, timestamp, src_ip. dst_ip, direction, n_cells                      
+    # remove ACKs, retransmissions                                               
+    # Remove sendme's and store that in a separate CSV                           
+    # for the moment, keep the original .pcap                                    
+    # we don't need the payload stripping                                        
+    pcap_filtered = []                                                           
+    orig_pcap = pcap_path + ".original"                                          
+    copyfile(pcap_path, orig_pcap)                                               
+    with PcapReader(orig_pcap) as preader:                                       
+        for p in preader:                                                        
+            if 'TCP' in p:                                                       
+                ip = p.payload                                                   
+                if ip.dst in iplist or ip.src in iplist:                         
+                    pcap_filtered.append(p)                                      
+    wrpcap(pcap_path, pcap_filtered)
 
 
 def start_xvfb(win_width=cm.DEFAULT_XVFB_WIN_W,

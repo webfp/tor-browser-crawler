@@ -1,4 +1,5 @@
 stem
+scapy
 psutil>=2.2.1
 pyvirtualdisplay
 selenium==2.53.6

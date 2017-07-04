@@ -82,7 +82,7 @@ class CrawlerWebFP(CrawlerBase):
         wl_log.debug("Found %s guards in the consensus.", len(guard_ips))
         wl_log.info("Filtering packets without a guard IP.")
         try:
-            ut.filter_pcap(self.job.pcap_file, guard_ips, strip=True)
+            ut.filter_pcap(self.job.pcap_file, guard_ips)
         except Exception as e:
             wl_log.error("ERROR: filtering pcap file: %s.", e)
             wl_log.error("Check pcap: %s", self.job.pcap_file)
