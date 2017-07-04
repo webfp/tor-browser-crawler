@@ -22,7 +22,7 @@ RUN adduser --system --group --disabled-password --gecos '' --shell /bin/bash do
 
 # download geckodriver
 ADD https://github.com/mozilla/geckodriver/releases/download/v0.17.0/geckodriver-v0.17.0-linux64.tar.gz /bin/
-RUN tar -zxvf /bin/geckodriver*
+RUN tar -zxvf /bin/geckodriver* -C /bin/
 ENV PATH /bin/geckodriver:$PATH
 
 # add setup.py
