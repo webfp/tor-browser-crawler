@@ -15,7 +15,6 @@ ethtool -K eth0 tx off rx off tso off gso off gro off lro off
 # install python requirements
 pushd ${BASE}
 pip install -U -r requirements.txt
-pip install -U selenium
 
 # copy tor browser bundle
 rm -rf tor-browser_en-US
