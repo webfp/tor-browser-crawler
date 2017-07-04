@@ -36,7 +36,7 @@ Requirements
 ### 2. Run a crawl with the defaults
 
 ```
-python main.py -u ./etc/localized-urls-100-top.csv -e wang_and_goldberg
+python main.py -t WebFP -u ./etc/localized-urls-100-top.csv -c wang_and_goldberg
 ```
 
 To get all the available command line parameters and the usage run:
@@ -51,6 +51,14 @@ The collected data can be found in the `results` folder:
 
     * Pcaps: `./results/latest`
     * Logs: `./results/latest_crawl_log`
+
+
+Use Docker container
+-------------------
+
+1. `make build`
+
+2. `make run` (or specify the parameters: `make run PARAMS="-t WebFP"`
 
 
 Sample crawl data

@@ -23,14 +23,12 @@ VOLUMES = \
 	--volume=`pwd`:${CRAWL_PATH}				\
 
 PARAMS=-c wang_and_goldberg -t WebFP -u ./etc/localized-urls-100-top.csv -s
-#PARAMS=-c default -t WebFP -u ./etc/localized-urls-100-top.csv -s -x 1200x800
 
 build:
 	@docker build -t tbcrawl --rm .
 
 run:
 	@docker run -it --rm ${ENV_VARS} ${VOLUMES} --privileged tbcrawl ${CRAWL_PATH}/Entrypoint.sh "$(PARAMS)"
-	#@docker run -it --rm ${ENV_VARS} ${VOLUMES} --privileged tbcrawl bash
 
 stop:
 	@docker stop `docker ps -a -q -f ancestor=tbcrawl`
