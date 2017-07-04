@@ -56,9 +56,11 @@ The collected data can be found in the `results` folder:
 Use Docker container
 -------------------
 
+1. Clone repository and change directory into it.
+
 1. `make build`
 
-2. `make run` (or specify the parameters: `make run PARAMS="-t WebFP"`
+1. `make run` (or specify the parameters: `make run PARAMS="-t WebFP"`
 
 
 Sample crawl data
