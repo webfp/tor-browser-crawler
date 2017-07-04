@@ -56,6 +56,8 @@ The collected data can be found in the `results` folder:
 Use Docker container
 -------------------
 
+1. Install docker and start it.
+
 1. Clone repository and change directory into it.
 
 1. `make build`
