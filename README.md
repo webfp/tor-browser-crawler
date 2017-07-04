@@ -62,7 +62,7 @@ Use Docker container
 
 1. `make build`
 
-1. `make run` (or specify the parameters: `make run PARAMS="-t WebFP"`
+1. `make run` (or pass it the parameters, for example: `make run PARAMS="-t WebFP"`
 
 
 Sample crawl data
