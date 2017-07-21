@@ -83,8 +83,6 @@ def setup_virtual_display(virt_display):
     if virt_display:
         w, h = (int(dim) for dim in virt_display.lower().split("x"))
         return ut.start_xvfb(w, h)
-    else:
-        return ut.start_xvfb()
 
 def post_crawl():
     """Operations after the crawl."""
