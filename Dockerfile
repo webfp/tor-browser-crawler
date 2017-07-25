@@ -21,16 +21,13 @@ RUN pip install requests
 RUN adduser --system --group --disabled-password --gecos '' --shell /bin/bash docker
 
 # download geckodriver
-ADD https://github.com/mozilla/geckodriver/releases/download/v0.17.0/geckodriver-v0.17.0-linux64.tar.gz /bin/
+ADD https://github.com/mozilla/geckodriver/releases/download/v0.10.0/geckodriver-v0.10.0-linux64.tar.gz /usr/bin/
 RUN tar -zxvf /bin/geckodriver* -C /bin/
 ENV PATH /bin/geckodriver:$PATH
 
 # add setup.py
 RUN git clone https://gist.github.com/852eca0c5820eb7998432e39effcf73a.git /home/docker/tbb_setup
 RUN python /home/docker/tbb_setup/setup.py 7.0.2
-
-# install geckodriver
-ADD https://github.com/mozilla/geckodriver/releases/download/v0.10.0/geckodriver-v0.10.0-linux64.tar.gz /usr/bin/
 
 # Set the display
 ENV DISPLAY $DISPLAY
