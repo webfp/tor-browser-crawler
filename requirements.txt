@@ -2,5 +2,5 @@ stem
 scapy
 psutil>=2.2.1
 pyvirtualdisplay
-selenium==2.53.6
-tbselenium
+selenium==3.0.0b2
+git+git://github.com/gunesacar/tor-browser-selenium@tbgeckodriver#egg=tbselenium
