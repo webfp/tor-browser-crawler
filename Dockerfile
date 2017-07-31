@@ -5,11 +5,11 @@ FROM debian:stable-slim
 
 # Install required packages.
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install sudo build-essential autoconf git zip unzip xz-utils
+RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install sudo build-essential autoconf git zip unzip xz-utils gzip tar
 RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install libtool libevent-dev libssl-dev
 RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install python python-dev python-setuptools python-pip
 RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install net-tools ethtool tshark libpcap-dev
-RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install xvfb firefox-esr
+RUN DEBIAN_FRONTEND=noninteractive apt-get --assume-yes --yes install xvfb firefox-esr wget
 RUN apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -21,8 +21,8 @@ RUN pip install requests
 RUN adduser --system --group --disabled-password --gecos '' --shell /bin/bash docker
 
 # download geckodriver
-ADD https://github.com/mozilla/geckodriver/releases/download/v0.10.0/geckodriver-v0.10.0-linux64.tar.gz /usr/bin/
-RUN tar -zxvf /bin/geckodriver* -C /bin/
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.10.0/geckodriver-v0.10.0-linux64.tar.gz
+RUN tar -zxvf geckodriver* -C /bin/
 ENV PATH /bin/geckodriver:$PATH
 
 # add setup.py
