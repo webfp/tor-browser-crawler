@@ -1,0 +1,6 @@
+---
+- name: Synchronize local source directory of Tor
+  synchronize:
+    src: "{{ custom_tor_src_dir }}/" # Source host
+    dest: "{{ custom_tor_dest_dir }}/" # Destination host
+    copy_links: no

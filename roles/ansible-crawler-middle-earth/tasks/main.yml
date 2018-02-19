@@ -1,0 +1,26 @@
+---
+# tasks file for ansible-crawler-middle-earth
+# - include: kill-old-processes.yml
+
+- name: Set TBB permissions to be used by root
+  file: dest={{ crawler_path }}/tor-browser_en-US/ owner=root recurse=yes
+  
+- name: Copy previously compiled Tor to the Tor Browser Bundle
+  command: "cp {{ tor_binary_path }} {{ crawler_path }}/tor-browser_en-US/Browser/TorBrowser/Tor/"
+
+- include: copy-url-list.yml
+
+- include: split-urls-per-host.yml
+
+- include: split-urls-per-chunk.yml
+
+- include: setup-config-ini.yml
+
+- include: start-crawl.yml
+  with_sequence: count="{{ no_crawls }}"
+
+# - include: wait-until-finished.yml
+
+# - include: wait-until-website.yml
+
+# - include: kill-crawler.yml

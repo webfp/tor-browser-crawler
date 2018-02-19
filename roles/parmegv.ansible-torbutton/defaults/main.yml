@@ -1,0 +1,11 @@
+---
+# defaults file for ansible-torbutton
+torbutton_dirpath: "~"
+torbutton_git_repo_name: "torbutton"
+
+torbutton_git_repo: "https://git.torproject.org/{{ torbutton_git_repo_name }}.git"
+torbutton_git_tag: "master"
+
+torbutton_patch: "" #
+torbutton_patched_version: "" # "1.9.6.1" # Version of the patched Torbutton, to locate the generated XPI
+torbutton_tor_browser_bundle_path: "" # Path to the Tor Browser Bundle, to move the patched XPI to it

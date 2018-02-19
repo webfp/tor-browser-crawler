@@ -1,0 +1,4 @@
+---
+# vars file for ansible-swapon
+swap_file_mode: 0600
+mount_fstype: swap

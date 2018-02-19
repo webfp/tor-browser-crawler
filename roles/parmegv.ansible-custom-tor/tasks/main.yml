@@ -1,0 +1,14 @@
+---
+# tasks file for ansible-custom-tor
+- name: Install apt dependencies
+  include: install-apt-deps.yml
+
+- name: Synchronize local source directory of Tor
+  include: sync-tor-dir.yml
+
+- name: make install dist Tor
+  include: make-tor-from-source.yml
+
+- name: Install the Systemd unit
+  include: install-systemd-unit.yml
+  when: inventory_hostname in groups['middles']

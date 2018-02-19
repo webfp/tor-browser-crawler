@@ -1,0 +1,19 @@
+galaxy_info:
+  author: Rafael Gálvez Vizcaíno
+  company: ESAT/COSIC KU Leuven
+
+  license: license (BSD)
+
+  min_ansible_version: 2.2
+
+  platforms:
+  
+  - name: Debian
+    versions:
+      - jessie
+
+dependencies:
+  - { role: parmegv.ansible-tor-browser-crawler, crawler_virtualenv_path: "{{ virtualenv_path }}" }
+  - { role: parmegv.ansible-custom-tor, custom_tor_src_dir: "{{ tor_path }}" }
+  - { role: parmegv.ansible-onionperf, onionperf_dirpath: "{{ crawler_path }}", onionperf_virtualenv_path: "{{ virtualenv_path }}" }
+  - { role: parmegv.ansible-torbutton, torbutton_patch: "{{ tor_path }}/test_url_cell/torbutton.patch", torbutton_patched_version: "1.9.6.1", torbutton_tor_browser_bundle_path: "{{ crawler_path }}/tor-browser_en-US", torbutton_git_repo: "https://git.torproject.org/user/gk/{{ torbutton_git_repo_name }}.git", torbutton_git_tag: "rob" }

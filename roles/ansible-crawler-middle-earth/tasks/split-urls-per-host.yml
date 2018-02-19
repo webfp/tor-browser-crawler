@@ -1,0 +1,2 @@
+- name: Split urls per host
+  command: split --numeric-suffixes --suffix-length=2 --number "l/{{ no_clients }}" "{{ urls_path }}" "{{ urls_path }}"

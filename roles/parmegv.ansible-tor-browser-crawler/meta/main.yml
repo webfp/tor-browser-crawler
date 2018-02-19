@@ -1,0 +1,17 @@
+galaxy_info:
+  author: Rafael Gálvez Vizcaíno
+  company: ESAT/COSIC KU Leuven
+
+  license: license (BSD)
+
+  min_ansible_version: 2.2
+
+  platforms:
+  
+  - name: Debian
+    versions:
+      - jessie
+
+dependencies:
+  - role: parmegv.ansible-swapon
+  - { role: parmegv.ansible-tor-browser-bundle, tbb_dirpath: "{{ crawler_dirpath }}", tags: tbb }

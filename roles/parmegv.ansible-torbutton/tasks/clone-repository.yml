@@ -1,0 +1,6 @@
+- name: Clone git repository
+  git:
+    repo="{{ torbutton_git_repo }}"
+    dest="{{ torbutton_path }}"
+    version="{{ torbutton_git_tag }}"
+    force=yes

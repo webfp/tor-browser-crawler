@@ -1,0 +1,17 @@
+# The unarchive module is relying on tar's --diff option, which does not check
+# file hashes, just that the same filenames are present. Thus you can change a
+# file inside the unarchived folder, while preserving it's name, and tar --diff
+# will consider it unchanged. tar's --skip-old-files behaves in the same way.
+# When we re-run our playbook it's necessary we ensure the same end-state and
+# overwrite a potentially polluted browser profile. Hence the following:
+
+- name: Remove the dir the TBB tarball will be extracted to.
+  file:
+    path: "{{ tbb_path }}"
+    state: absent
+
+- name: Extract TBB archive.
+  unarchive:
+    copy: no
+    src: "{{ tbb_dirpath }}/{{ tbb_filename }}"
+    dest: "{{ tbb_dirpath }}"

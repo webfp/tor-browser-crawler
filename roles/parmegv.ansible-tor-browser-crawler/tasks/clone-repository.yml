@@ -1,0 +1,5 @@
+- name: Clone git repository
+  git:
+    repo="{{ crawler_git_repo }}"
+    dest="{{ crawler_path }}"
+    version="{{ crawler_git_tag }}"

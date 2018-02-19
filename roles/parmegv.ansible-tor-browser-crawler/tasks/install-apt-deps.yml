@@ -1,0 +1,10 @@
+---
+
+- name: Install apt dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_flattened:
+    - "{{ crawler_apt_dependencies }}"
+    - "{{ crawler_role_apt_dependencies }}"
+  become: yes

@@ -1,0 +1,5 @@
+- name: Clone onionperf
+  git:
+    repo={{ onionperf_git_repo }}
+    dest={{ onionperf_path }}
+    force=yes

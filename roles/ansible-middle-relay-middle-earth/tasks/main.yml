@@ -1,0 +1,56 @@
+---
+# tasks file for ansible-middle-relay-middle-earth
+- name: Install lsof to kill onionperf based on the log file
+  apt:
+    name: lsof
+    state: latest
+  become: yes
+  
+- name: Create Tor data directory
+  file:
+    path: "{{ tor_data_path }}"
+    state: directory
+    mode: 0755
+  become: yes
+
+- block:
+  - name: Move experiment torrc to the correct location
+    template: src=torrc dest={{ torrc_dirpath }}
+
+  - name: Set name of the relay
+    replace:
+      dest={{ torrc_path }}
+      regexp='^Nickname.*$'
+      replace="Nickname middleTest"
+
+  - name: Get absolute path for the Tor data directory
+    stat:
+      path: "{{ tor_data_path }}"
+    register: tor_data_path_file
+
+  - name: Set data directory
+    replace:
+      dest={{ torrc_path }}
+      regexp="^DataDirectory.*$"
+      replace="DataDirectory {{ tor_data_path_file.stat.path }}"
+
+  - name: Set log notice file
+    replace:
+      dest={{ torrc_path }}
+      regexp='^Log notice file.*$'
+      replace="Log notice file {{ tor_log_notice_path }}"
+  become: yes
+
+- local_action:
+    module: ec2
+    instance_tags:
+      Name: "tag_Name_middle"
+    state: restarted
+    region: "{{ region_ec2_frankfurt }}"
+
+- name: Start tor
+  systemd:
+    name: tor.service
+    state: started
+    daemon_reload: yes
+  become: yes

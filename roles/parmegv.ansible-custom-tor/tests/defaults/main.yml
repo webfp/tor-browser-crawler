@@ -1,0 +1,8 @@
+tor_version: "0.2.9.9"
+tor_src_url: "https://www.torproject.org/dist/tor-{{ tor_version }}.tar.gz"
+tor_tarball: "~/tor.tar.gz"
+tor_dir: "~/tor_test"
+tor_binary_path: "src/or/tor"
+tor_binary: "{{ tor_dir }}/{{ tor_binary_path }}"
+
+tor_version_output: "Tor version {{ tor_version }}"

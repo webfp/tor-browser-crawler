@@ -1,0 +1,35 @@
+---
+# vars file for ansible-onionperf
+onionperf_path: "{{ onionperf_dirpath }}/{{ onionperf_dirname }}"
+
+onionperf_apt_dependencies:
+  - python2.7
+  - gcc
+  - cmake
+  - make
+  - libglib2.0-0
+  - libglib2.0-dev
+  - libigraph0
+  - libigraph0-dev
+  - libevent-2.0-5
+  - libevent-dev
+  - openssl
+  - libssl-dev
+  - libfreetype6-dev
+  - libpng12-dev
+  - python-dev
+  - python-numpy
+  # - python-stem
+  - python-twisted
+  - python-lxml
+  - python-networkx
+  - python-matplotlib
+  - python-numpy
+  - python-scipy
+
+onionperf_role_apt_dependencies:
+  - git
+  - python-pip
+
+onionperf_pip_packages:
+  - stem

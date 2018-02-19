@@ -1,0 +1,17 @@
+---
+- name: Check if tb-crawler virtual environment exists.
+  stat:
+    path: "{{ crawler_virtualenv_path }}"
+  register: tb_crawler_virtualenv
+
+- name: Install tor-browser-crawler pip dependencies to tb-crawler virtualenv.
+  pip:
+    requirements: "{{ crawler_path }}/requirements.txt"
+    virtualenv: "{{ crawler_virtualenv_path }}"
+    virtualenv_python: "{{ crawler_python_executable }}"
+
+- name: Install tqdm (remove after its inclusion into requirements.txt
+  pip:
+    name: "tqdm"
+    virtualenv: "{{ crawler_virtualenv_path }}"
+    virtualenv_python: "{{ crawler_python_executable }}"

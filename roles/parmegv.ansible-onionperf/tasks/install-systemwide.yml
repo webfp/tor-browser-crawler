@@ -1,0 +1,10 @@
+- name: Install onionperf from the cloned repo in the system with pip editable
+  pip:
+    name:  "{{ onionperf_path }}"
+  become: yes
+
+- name: Install pip packages systemwide
+  pip:
+    name: stem
+    version: 1.5.4
+  become: yes

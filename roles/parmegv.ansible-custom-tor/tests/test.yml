@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  remote_user: root
+  pre_tasks:
+    - name: Download Tor tarball
+      unarchive:
+        src="https://www.torproject.org/dist/tor-0.2.9.9.tar.gz"
+        dest="~/"
+        copy=no
+        creates="~/tor-0.2.9.9"
+
+  roles:
+    - { role: ansible-custom-tor, tor_dirname: "tor-0.2.9.9/", src_dirpath: "~/" }

@@ -1,0 +1,23 @@
+---
+# vars file for ansible-tor-browser-crawler
+crawler_apt_dependencies:
+  - python2.7
+  - gcc
+  - git #tbselenium depends
+  - ethtool
+  - tcpdump
+  - wireshark
+  - tshark
+  - xvfb
+  - tree
+  - python-dev # psutil depends
+  - libpcap-dev # pcapy depends
+  - gnupg-curl
+  - virtualenvwrapper
+  - tmux
+  - vim
+
+crawler_role_apt_dependencies:
+  - rsync
+
+crawler_path: "{{ crawler_dirpath }}/{{ crawler_dirname }}" # Path where the crawler will live

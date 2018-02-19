@@ -1,0 +1,16 @@
+---
+- name: Install apt dependencies
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items: "{{ onionperf_apt_dependencies }}"
+
+- name: Install role apt dependencies
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items: "{{ onionperf_role_apt_dependencies }}"

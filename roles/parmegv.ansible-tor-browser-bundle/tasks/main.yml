@@ -1,0 +1,22 @@
+---
+# tasks file for tor-browser-bundle
+- name: Check if we already have TBB downloaded
+  stat:
+    path={{ tbb_dirpath }}/{{ tbb_filename }}
+  register: tbb_fact_downloaded
+
+- block:
+  - include: download_tbb.yml
+  - include: install_apt_dependencies.yml
+  when: tbb_fact_downloaded.stat.isdir is not defined and not tbb_fact_downloaded.stat.isdir
+
+- name: Check if we already have TBB downloaded
+  stat:
+    path={{ tbb_path }}
+  register: tbb_fact_extracted
+
+- block:
+  - include: verify_tbb.yml
+  - include: extract_tbb.yml
+    when: gpg_verify_result.rc == 0
+  when: not tbb_fact_extracted.stat.exists

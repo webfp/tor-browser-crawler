@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - { role: tor-browser-bundle, tbb_release: 6.0.6 }

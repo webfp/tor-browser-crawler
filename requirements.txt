@@ -1,0 +1,8 @@
+stem
+requests
+psutil>=2.2.1
+netifaces>=0.10.4
+pyvirtualdisplay
+scapy
+selenium==2.53.6
+tbselenium

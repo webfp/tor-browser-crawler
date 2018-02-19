@@ -1,0 +1,27 @@
+- name: Get details of the directory where the Tor Browser Crawler must be
+  stat: path="{{ crawler_dirpath }}/{{ crawler_dirname }}"
+  changed_when: false
+  register: test_fact_crawler_cloned
+- name: Check that the Tor Browser Crawler is cloned
+  assert:
+    that:
+      - "test_fact_crawler_cloned.stat.exists == True"
+
+- name: Get details of the directory where the Virtual Environment must be
+  stat: path="{{ crawler_virtualenv_path }}"
+  changed_when: false
+  register: test_fact_virtualenv_created
+
+- name: Check that the Virtual Environment exists
+  assert:
+    that:
+      - "test_fact_virtualenv_created.stat.exists == True"
+
+- name: python bin/tbcrawler.py output
+  command: python "{{ crawler_path }}"/bin/tbcrawler.py --help
+  register: test_fact_tbcrawler_output
+
+- name: Check that the Tor Browser Crawler is cloned
+  assert:
+    that:
+      - "usage in test_fact_tbcrawler_output"

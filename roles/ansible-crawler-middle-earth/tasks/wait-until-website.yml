@@ -1,0 +1,3 @@
+- wait_for:
+    path: "{{ crawler_path }}/results/latest_crawl/logs/crawl.log"
+    search_regex: "Visit.*{{ website_to_stop }}"

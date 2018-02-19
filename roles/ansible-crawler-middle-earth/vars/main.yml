@@ -1,0 +1,14 @@
+---
+# vars file for ansible-crawler-middle-earth
+urls_path: "{{ urls_dirpath }}/{{ urls_filename }}"
+tor_binary_path: "/usr/local/bin/tor"
+
+finished_crawl_string: "the crawl has finished"
+no_clients: "{{ groups['clients'] | length }}"
+client_index: "{{ groups['clients'].index(inventory_hostname) }}"
+#middle_hostname: "{{ groups['middles'][client_index|int] }}"
+middle_hostname: "{{ groups['tag_Name_middle'][client_index|int] }}"
+# middle: "{{ hostvars[middle_hostname]['ansible_eth0']['ipv4']['address'
+# ] }}"
+middle: "{{ hostvars[middle_hostname]['ansible_ssh_host'] }}" # In AWS, the hostname is the ip
+user_middle: "{{ hostvars[middle_hostname]['ansible_user'] }}"

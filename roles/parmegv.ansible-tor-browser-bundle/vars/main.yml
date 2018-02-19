@@ -1,0 +1,18 @@
+---
+# vars file for tor-browser-bundle
+
+tbb_apt_dependencies:
+  - libdbus-glib-1-2
+  - libgtk2.0-0
+
+latest_tbb_parent_url: "https://dist.torproject.org/torbrowser/{{ tbb_release }}"
+old_tbb_parent_url: "https://archive.torproject.org/tor-package-archive/torbrowser/{{ tbb_release }}"
+tbb_filename: "tor-browser-linux{{ tbb_arch }}-{{ tbb_release }}_{{ tbb_locale }}.tar.xz"
+tbb_signature_filename: "{{ tbb_filename }}.asc"
+tbb_dirname: "tor-browser_{{ tbb_locale }}"
+tbb_path: "{{ tbb_dirpath }}/{{ tbb_dirname }}"
+
+latest_tbb_url: "{{ latest_tbb_parent_url }}/{{ tbb_filename }}"
+latest_tbb_signature_url: "{{ latest_tbb_parent_url }}/{{ tbb_signature_filename }}"
+old_tbb_url: "{{ old_tbb_parent_url }}/{{ tbb_filename }}"
+old_tbb_signature_url: "{{ old_tbb_parent_url }}/{{ tbb_signature_filename }}"

@@ -1,0 +1,6 @@
+- name: Kill processes accessing crawl.log
+  shell: "lsof {{ crawler_path }}/results/latest_crawl/logs/crawl.log | awk 'NR>=2 {print $2}' | xargs kill -2"
+- name: Kill processes accessing tor.log
+  shell: "lsof {{ crawler_path }}/results/latest_crawl/logs/tor.log | awk 'NR>=2 {print $2}' | xargs kill -2"
+# - name: Kill tor
+#   command: "killall tor"

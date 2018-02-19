@@ -1,0 +1,10 @@
+---
+# vars file for ansible-torbutton
+
+torbutton_apt_dependencies:
+  - zip
+
+torbutton_path: "{{ torbutton_dirpath }}/{{ torbutton_git_repo_name }}"
+
+torbutton_xpi_new: "{{ torbutton_path }}/pkg/torbutton-{{ torbutton_patched_version }}.xpi"
+torbutton_xpi_dest: "{{ torbutton_tor_browser_bundle_path }}/Browser/TorBrowser/Data/Browser/profile.default/extensions/torbutton@torproject.org.xpi"

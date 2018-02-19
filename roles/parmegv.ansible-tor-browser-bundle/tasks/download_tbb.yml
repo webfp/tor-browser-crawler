@@ -1,0 +1,25 @@
+- name: Create tbb directory
+  file:
+    path: "{{ tbb_dirpath }}"
+    state: directory
+    mode: 0755
+
+- name: Download TBB tarball and signature (latest)
+  get_url:
+    url: "{{ item }}"
+    dest: "{{ tbb_dirpath }}"
+  with_items:
+    - "{{ latest_tbb_url }}"
+    - "{{ latest_tbb_signature_url }}"
+  register: latest_tbb_downloaded
+  ignore_errors: True
+
+- name: Download TBB tarball and signature (from archive)
+  get_url:
+    url: "{{ item }}"
+    dest: "{{ tbb_dirpath }}"
+  with_items:
+    - "{{ old_tbb_url }}"
+    - "{{ old_tbb_signature_url }}"
+  when: latest_tbb_downloaded|failed
+ 

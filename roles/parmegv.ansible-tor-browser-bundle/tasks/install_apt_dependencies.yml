@@ -1,0 +1,6 @@
+- name: Install Tor Browser Bundle Debian packages.
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items: "{{ tbb_apt_dependencies }}"

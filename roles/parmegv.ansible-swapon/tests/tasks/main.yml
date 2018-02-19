@@ -1,0 +1,4 @@
+- name: Check if there is swap
+  assert:
+    that:
+      - "{{ ansible_swaptotal_mb }} > 1"

@@ -1,0 +1,26 @@
+---
+# defaults file for ansible-crawler-middle-earth
+virtualenv_path: "~/.virtualenvs/crawler"
+middle_earth_local_dir: '..'
+crawler_local_src_dir: '{{ middle_earth_local_dir }}/crawler'
+tor_path: "{{ middle_earth_local_dir }}/tor"
+# crawler_path: "{{ ansible_env.HOME }}/tor-browser-crawler"
+crawler_path: "~/tor-browser-crawler"
+tbb_dirname: "tor-browser_en-US"
+website_to_stop: "facebook.com"
+
+config_ini_dirpath: "{{ crawler_path }}"
+config_ini_path: "{{ crawler_path }}/config.ini"
+
+urls_dirpath: "{{ crawler_path }}/etc"
+urls_filename: "localized-urls-100-top.csv"
+fingerprints_mapping: "mapping_crawler_middle.csv"
+
+# tor_data_path: "{{crawler_path }}/{{ tbb_dirname }}/Browser/TorBrowser/Data/"
+tor_data_path: "~/"
+middle_onionperf_log: "~/onionperf.log"
+crawler_no_batches: 1
+crawler_no_visits: 1
+crawler_crawl_duration: "{{ 60 * 60 * 24 * 30 * 12 }}" # 30 days * 12 months
+websites_per_crawl: 5
+middle_fingerprint_file: "/usr/local/etc/tor/tor_data/fingerprint"

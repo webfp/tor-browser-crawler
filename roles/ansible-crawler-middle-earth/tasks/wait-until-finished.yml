@@ -1,0 +1,4 @@
+- wait_for:
+    path: "{{ crawler_path }}/results/latest_crawl/logs/crawl.log"
+    search_regex: "{{ finished_crawl_string }}"
+    timeout: "{{ 60 * 60 * 60 }}"

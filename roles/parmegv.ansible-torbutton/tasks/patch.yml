@@ -1,0 +1,12 @@
+- debug: msg="torbutton_path is {{ torbutton_path }}"
+- name: Copy patch to torbutton
+  copy:
+    src={{ torbutton_patch }}
+    dest={{ torbutton_path }}
+  # when: tor_patch != ""
+
+- name: Patch torbutton
+  shell: patch -p1 < ./torbutton.patch
+  args:
+    chdir: "{{ torbutton_path }}"
+  # when: tor_patch != ""

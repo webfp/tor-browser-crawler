@@ -1,0 +1,8 @@
+- name: Produce XPI
+  shell: ./makexpi.sh
+  args:
+    chdir: "{{ torbutton_path }}"
+
+- name: Replace extension in TBB
+  command: mv {{ torbutton_xpi_new }} {{ torbutton_xpi_dest }}
+  # when: patched_version != ""

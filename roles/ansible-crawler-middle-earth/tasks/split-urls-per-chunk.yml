@@ -1,0 +1,12 @@
+- set_fact: all_crawler_websites={{ urls_path+'0'+client_index if client_index|int < 10 else urls_path + client_index }}
+
+- name: Compute no websites per crawl
+  shell: wc -l {{ all_crawler_websites }} | awk 'NR==1 {print $1}'
+  register: no_websites_in_crawler
+- debug: msg="{{ no_websites_in_crawler }} websites in crawler machine"
+
+- name: Split in smaller crawls (at most 99 chunks)
+  command: split --numeric-suffixes --suffix-length=2 --lines "{{ websites_per_crawl }}" "{{ all_crawler_websites }}" "{{ all_crawler_websites }}"
+
+- set_fact: no_crawls="{{ (no_websites_in_crawler.stdout|int / websites_per_crawl) | round(0, 'ceil') | int }}"
+- debug: msg="{{ no_crawls }} crawls per client"

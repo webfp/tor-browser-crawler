@@ -1,0 +1,5 @@
+---
+# tasks file for ansible-onionperf
+- include: install-apt-dependencies.yml
+- include: clone-repository.yml
+- include: install-systemwide.yml

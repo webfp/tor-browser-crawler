@@ -1,0 +1,9 @@
+---
+# defaults file for ansible-tor-browser-crawler
+crawler_git_repo: "https://github.com/webfp/tor-browser-crawler.git"
+crawler_git_tag: "master"
+crawler_dirpath: "~" # Parent directory of the crawler
+crawler_dirname: "tor-browser-crawler" # Name of the crawler directory
+crawler_virtualenv_path: "~/.virtualenvs/tor-browser-crawler"
+crawler_python_executable: "python2.7"
+crawler_local_src_dir: "" # Optional path to a local tor browser crawler directory. If set, the git repo won't be cloned

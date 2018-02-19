@@ -1,0 +1,5 @@
+---
+# defaults file for ansible-swapon
+# swap_file_path: "/swapfile"
+swap_file_path: /dev/xvdb
+memory_amount: "{{ (ansible_memtotal_mb / 1000 / 2)|round(0, 'ceil')|int }}G"

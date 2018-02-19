@@ -1,0 +1,43 @@
+- name: Make tor.service
+  make:
+    target: dist
+    chdir: "{{ custom_tor_dest_dir }}"
+
+- name: Make sure the user directory for systemd units exists
+  file:
+    path: "{{ custom_tor_systemd_units_path }}"
+    state: directory
+  become: yes
+
+- name: Copy Systemd unit to the user system path
+  copy:
+    src="{{ custom_tor_systemd_unit }}"
+    dest="{{ custom_tor_systemd_unit_remote_path }}"
+    remote_src=True
+  become: yes
+
+- name: Remove hardening section from the Systemd unit
+  lineinfile:
+    regexp: "^[(Private)|(Protect)|(Read)|(Capability)].*$"
+    dest: "{{ custom_tor_systemd_unit_remote_path }}"
+    state: absent
+  become: yes
+- name: Remove watchdog
+  lineinfile:
+    regexp: "^WatchdogSec.*$"
+    dest: "{{ custom_tor_systemd_unit_remote_path }}"
+    state: absent
+  become: yes
+
+- name: Set Systemd unit type
+  replace:
+    dest: "{{ custom_tor_systemd_unit_remote_path }}"
+    regexp: "^Type=.*$"
+    replace: "Type=simple"
+  become: yes
+
+- name: Activate Systemd unit
+  systemd:
+    name: tor
+    enabled: yes
+  become: yes

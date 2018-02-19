@@ -1,0 +1,15 @@
+{
+  "title": "httpdump",
+  "name": "httpdump",
+  "version": "0.0.1",
+  "description": "addon to dump http messages to disk.",
+  "main": "index.js",
+  "engines": {
+    "firefox": ">=38.0a1",
+    "fennec": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ]
+}

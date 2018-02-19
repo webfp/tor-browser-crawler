@@ -1,0 +1,6 @@
+- block:
+    - name: Set MTU to 1500
+      command: ifconfig eth0 mtu 1500
+    - name: Disable offloads
+      command: ethtool -K eth0 tx off rx off tso off gso off gro off lro off
+  become: yes

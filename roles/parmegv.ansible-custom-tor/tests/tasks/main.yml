@@ -1,0 +1,27 @@
+- name: Get details of the directory where the Tor binary must be
+  stat: path="{{ tor_binary }}"
+  changed_when: false
+  register: test_fact_tor_built
+
+- name: Check that Tor is correctly compiled
+  assert:
+    that:
+      - "test_fact_tor_built.stat.exists == True"
+
+- name: "Get output from tor --version"
+  shell: "{{ tor_binary }} --version"
+  register: test_fact_tor_version
+
+- name: Check that tor --version executes correctly
+  assert:
+    that: "{{ tor_version_output }} in test_fact_tor_version.stdout"
+
+- name: Deactivate Systemd unit
+  systemd:
+    name: tor
+    enabled: no
+
+- name: Activate Systemd unit
+  systemd:
+    name: tor
+    enabled: yes

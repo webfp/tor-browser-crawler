@@ -1,0 +1,32 @@
+- name: Copy config ini skeleton
+  template:
+    src: config.ini
+    dest: "{{ config_ini_dirpath }}"
+
+- name: Pick fingerprint from the middle
+  slurp: src="{{ middle_fingerprint_file }}"
+  delegate_to: "{{ middle }}"
+  become: yes
+  register: fingerprint
+
+- name: Set middle fingerprint
+  replace:
+    dest={{ config_ini_path }}
+    regexp='^torrc {{ item }}.*$'
+    replace="torrc {{ item }}={{ (fingerprint['content'] | b64decode).split()[1] }}"
+  with_items:
+    - "SecondHopHSMiddleNodes"
+    - "SecondHopMiddleNodes"
+    - "SignalNodes"
+
+- name: Set number of batches
+  replace:
+    dest={{ config_ini_path }}
+    regexp="^job batches=.*$"
+    replace="job batches={{ crawler_no_batches }}"
+
+- name: Set number of visits
+  replace:
+    dest={{ config_ini_path }}
+    regexp="^job visits=.*$"
+    replace="job visits={{ crawler_no_visits }}"

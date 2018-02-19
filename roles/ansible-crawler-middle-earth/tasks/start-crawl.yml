@@ -1,0 +1,92 @@
+- set_fact:
+    chunk_raw: "{{ (item|int - 1)|string }}"
+- set_fact:
+    chunk: "{{ chunk_raw if chunk_raw|int > 10 else '0'+chunk_raw }}"
+- set_fact:
+    urls: "{{ all_crawler_websites+chunk }}"
+
+- name: Set crawl name command to get the stdout out of it
+  shell: "date +%Y_%m_%d_%H_%M_%S_%5N"
+  register: crawl_name_command
+  tags:
+    - pull_results
+
+- name: Set crawl name from stdout
+  set_fact:
+    crawl_name: "{{ crawl_name_command.stdout }}"
+  tags:
+    - pull_results
+  
+- name: Run onionperf in the middle
+  command: "onionperf monitor -p 9151 -c SIGNAL_CELL SIGNAL_CIRCUIT -e BW CIRC CIRC_BW CIRC_MINOR CONN_BW ORCONN STATUS_CLIENT STATUS_GENERAL STATUS_SERVER STREAM STREAM_BW -l {{ middle_onionperf_log }}"
+  async: "{{ 60 * 60 * 24 }}"
+  poll: 0
+  register: onionperf_process
+  delegate_to: "{{ middle }}"
+
+- name: Start crawl
+  become: yes
+  command: "{{ virtualenv_path }}/bin/python {{ crawler_path }}/bin/tbcrawler.py --screenshots -x '1200x800' -t WebFP -u {{ urls }}"
+  async: "{{ crawler_crawl_duration }}"
+  poll: 0
+  register: crawler_process
+
+- name: Wait until the crawl is finished
+  wait_for:
+    path: "{{ crawler_path }}/results/latest_crawl/logs/crawl.log"
+    search_regex: "{{ finished_crawl_string }}"
+    timeout: "{{ crawler_crawl_duration }}"
+
+- name: Kill processes accessing the onionperf log
+  shell: "lsof {{ middle_onionperf_log }} | awk 'NR>=2 {print $2}' | xargs kill -2"
+  delegate_to: "{{ middle }}"
+
+- name: Pull middle results with scp
+  command: scp -o StrictHostKeyChecking=no {{ user_middle }}@{{ middle }}:{{ middle_onionperf_log }} {{ crawler_path }}/results/latest_crawl/logs/onionperf_middle.log
+  tags: pull_results
+
+- file:
+    path: "{{ middle_onionperf_log }}"
+    state: absent
+  register: onionperf_middle
+  remote_user: "{{ user_middle }}"
+  delegate_to: "{{ middle }}"
+  tags: pull_results
+
+- name: Split onionperf log from the middle into visits and parse them
+  command: "{{ virtualenv_path }}/bin/python utils/split_onionperf.py -o {{ crawler_path }}/results/latest_crawl/middle_onionperf_logs/ {{ crawler_path }}/results/latest_crawl/logs/onionperf_middle.log"
+  args:
+    chdir: "{{ crawler_path }}"
+  tags: pull_results
+  
+- name: Compress results at the crawler
+  shell: "tar chaf {{ crawler_path }}/results/{{ crawl_name }}.tar.xz {{ crawler_path }}/results/latest_crawl/"
+  tags:
+    - pull_results
+
+- name: Pull crawler results
+  fetch:
+    src: "{{ crawler_path }}/results/{{ crawl_name }}.tar.xz"
+    dest: results/
+  tags: pull_results
+
+- name: Remove results 
+  file:
+    path: "{{ crawler_path }}/results/"
+    state: absent
+  tags:
+    - pull_results
+
+- name: Recreate results directory
+  file:
+    path: "{{ crawler_path }}/results/"
+    state: directory
+  tags:
+    - pull_results
+
+- set_fact:
+    crawl_name_set: False
+# - name: Wait until the crawl is finished
+#   async_status: jid={{ crawler_process.ansible_job_id }}
+#   register: crawl_result
+#   until: crawl_result.finished

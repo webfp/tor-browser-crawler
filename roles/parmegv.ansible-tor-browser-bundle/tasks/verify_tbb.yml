@@ -1,0 +1,11 @@
+- name: Download TBB signing key.
+  command: gpg --keyserver "{{ gpg_keyserver }}" --recv-keys "{{ gpg_trusted_key }}"
+  register: gpg_import_tor_browser_devs_key_result
+  changed_when: "'imported: 1' in gpg_import_tor_browser_devs_key_result.stderr"
+
+- name: Verify TBB signature.
+  command: gpg --verify "{{ tbb_signature_filename }}" "{{ tbb_filename }}" 
+  register: gpg_verify_result
+  changed_when: false
+  args:
+    chdir: "{{ tbb_dirpath }}"

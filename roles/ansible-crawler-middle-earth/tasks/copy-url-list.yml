@@ -1,0 +1,5 @@
+- name: Copy url
+  copy:
+    src: "{{ local_urls_path }}"
+    dest: "{{ urls_dirpath }}"
+  when: local_urls_path is defined

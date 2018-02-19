@@ -1,0 +1,9 @@
+---
+# defaults file for ansible-middle-relay-middle-earth
+middle_earth_local_dir: ".."
+tor_path: "{{ middle_earth_local_dir }}/tor"
+tor_data_path: "/usr/local/etc/tor/tor_data"
+tor_log_notice_path: "{{ tor_data_path }}/notices.log"
+
+torrc_dirpath: "/usr/local/etc/tor/"
+torrc_path: "{{ torrc_dirpath }}/torrc"

@@ -1,0 +1,8 @@
+---
+- name: Install apt dependencies
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items: "{{ torbutton_apt_dependencies }}"

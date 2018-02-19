@@ -1,0 +1,3 @@
+- name: Kill any tor or firefox process
+  command: "killall tor firefox"
+  ignore_errors: yes

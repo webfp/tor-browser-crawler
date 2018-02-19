@@ -1,0 +1,10 @@
+---
+# defaults file for tor-browser-bundle
+tbb_release: 6.0.6
+tbb_locale: en-US
+tbb_arch: 64
+
+tbb_dirpath: "~/"
+
+gpg_keyserver: "x-hkp://pool.sks-keyservers.net"
+gpg_trusted_key: "0x4E2C6E8793298290"

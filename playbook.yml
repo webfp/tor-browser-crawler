@@ -1,0 +1,5 @@
+---
+- hosts: all
+  roles: 
+    # - { role: ansible-crawler-middle-earth }
+    - { role: ansible-middle-relay-middle-earth }

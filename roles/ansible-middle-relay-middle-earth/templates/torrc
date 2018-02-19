@@ -1,0 +1,29 @@
+## The IP address or hostname for incoming connections (leave commented and Tor will guess)
+#Address noname.example.com
+
+## Set the nickname of this relay
+Nickname middlearth2
+
+## Set your own contact info
+#ContactInfo 0xFFFFFFFF Random Person <nobody AT example dot com>
+
+## If you control multiple relays, include then in the family
+#MyFamily $keyid,$keyid,...
+
+ORPort 9001
+ControlPort 9151
+DirPort 9030
+
+RelayBandwidthRate 1 MBytes
+RelayBandwidthBurst 10 MBytes
+#AccountingMax 32 GB
+#AccountingStart day 00:00
+
+SocksPort 0
+SocksPolicy reject *
+
+ExitPolicy reject *:*
+ExitRelay 0
+
+Log notice file /home/mjuarezm/tor/log/notices.log
+DataDirectory /home/mjuarezm/tor/lib/tor

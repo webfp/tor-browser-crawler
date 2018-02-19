@@ -1,0 +1,7 @@
+- name: Get details of the directory where the Tor Browser Bundle must be
+  stat: path="{{ tbb_path }}"
+  register: test_fact_tbb_extracted
+- name: Check that the Tor Browser Bundle is correctly extracted
+  assert:
+    that:
+      - "test_fact_tbb_extracted.stat.exists == True"
