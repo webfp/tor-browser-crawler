@@ -16,9 +16,7 @@ This crawler implements the functionality of `tor-browser-crawler` and extends
 it to collect data from the middle position.  In particular, we use
 [OnionPerf](https://github.com/robgjansen/onionperf) to collect cell-level
 information. For ethical reasons, as we describe in the paper, we also
-implement a signal mechanism that our crawler sends to specific middles in
-order to tag circuits that our crawler has initiated, so that we do not capture
-traffic from Tor users.
+implement a signaling mechanism to indicate specific middles nodes to only capture traffic from circuits that our crawler has initiated, so that we do not capture traffic from Tor users.
 
 # Getting started
 
