@@ -47,8 +47,7 @@ def run():
                                tbb_logfile_path=cm.DEFAULT_FF_LOG,
                                tor_cfg=USE_RUNNING_TOR,
                                pref_dict=ffprefs,
-                               socks_port=int(torrc_config['socksport']),
-                               canvas_allowed_hosts=host_list)
+                               socks_port=int(torrc_config['socksport']))
 
     # Instantiate crawler
     crawl_type = getattr(crawler_mod, "Crawler" + args.type)
