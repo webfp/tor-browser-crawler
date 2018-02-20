@@ -6,7 +6,7 @@ XSOCK=/tmp/.X11-unix
 XAUTH=/tmp/.docker.xauth
 
 # paths
-TBB_PATH=/home/docker/tor-browser_en-US/
+TBB_PATH=/home/docker/tbcrawl/tor-browser_en-US/
 CRAWL_PATH=/home/docker/tbcrawl
 GUEST_SSH=/home/docker/.ssh
 HOST_SSH=${HOME}/.ssh
