@@ -5,4 +5,4 @@ netifaces>=0.10.4
 pyvirtualdisplay
 scapy
 selenium==2.53.6
-tbselenium
+tbselenium==0.2.1
