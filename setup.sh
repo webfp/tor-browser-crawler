@@ -85,6 +85,6 @@ export PYTHONPATH=$PYTHONPATH:${BASE}/onionperf/
 git clone https://github.com/robgjansen/onionperf.git
 
 # Run
-python bin/tbcrawler.py -c middle -t WebFP -u ../onions/frontpage_up.onions -s -e ./addons/httpdump
+#python bin/tbcrawler.py -c middle -t WebFP -u ../onions/frontpage_up.onions -s -e ./addons/httpdump
 #python bin/tbcrawler.py -c middle -t WebFP -u ../onions/frontpage_up.onions -s -a ./addons/httpdump/ -o results/161125_124213 -r results/161125_124213/job.chkpt
-python2.7 bin/tbcrawler.py -c middle -t WebFP -u ../onions/frontpage_up.onions -s
+#python2.7 bin/tbcrawler.py -c middle -t WebFP -u ../onions/frontpage_up.onions -s

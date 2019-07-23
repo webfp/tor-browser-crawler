@@ -226,8 +226,41 @@ class CrawlerBase(object):
             except Exception:
                 wl_log.error("Cannot get screenshot.")
 
-
 class CrawlerWebFP(CrawlerBase):
+
+    def _get_url(self):
+        return self.job.url
+
+    def cleanup_visit(self):
+        # attempt to move files to job's dir
+        self.move_logs()
+        addon_logfile = join(gettempdir(), HTTP_DUMP_ADDON_LOG)
+        if isfile(addon_logfile):
+            remove(addon_logfile)
+
+    def post_visit(self):
+        sleep(float(self.job.config['pause_between_visits']))
+
+    def move_logs(self):
+        if isfile(self.job.tshark_file):
+            self.filter_packets_without_guard_ip()
+        # move addon log to job's directory
+        addon_logfile = join(gettempdir(), HTTP_DUMP_ADDON_LOG)
+        if isfile(addon_logfile):
+            move(addon_logfile, join(self.job.path, HTTP_DUMP_ADDON_LOG))
+
+    def filter_packets_without_guard_ip(self):
+        guard_ips = set([ip for ip in self.controller.get_all_guard_ips()])
+        wl_log.info("Found %s guards in the consensus.", len(guard_ips))
+        wl_log.info("Filtering packets without a guard IP.")
+        try:
+            ut.filter_tshark(self.job.tshark_file, guard_ips)
+        except Exception as e:
+            wl_log.error("ERROR: filtering tshark log: %s.", e)
+            wl_log.error("Check tshark log: %s", self.job.thsark_file)
+
+
+class MiddleWebFP(CrawlerBase):
 
     def _get_url(self):
         return self.job.url + '#%s' % self.job.uid

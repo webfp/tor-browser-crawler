@@ -1,3 +1,4 @@
+import traceback
 import argparse
 import ConfigParser
 import sys
@@ -61,7 +62,7 @@ def run():
                      'extensions': addons_path,
                      'socks_port': int(torrc_config['socksport']),
                      'control_port': int(torrc_config['controlport']),
-                     'canvas_allowed_hosts': host_list
+                     #'canvas_allowed_hosts': host_list
                      }
 
     # Instantiate crawler
@@ -106,6 +107,7 @@ def run():
         sys.exit(-1)
     except Exception as e:
         wl_log.error("ERROR: unknown exception while crawling: %s" % e)
+        traceback.print_exc()
     finally:
         #driver.quit()
         #controller.quit()
